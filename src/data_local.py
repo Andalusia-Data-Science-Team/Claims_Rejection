@@ -68,14 +68,21 @@ class MergedDataPreprocessing:
 
         return df
 
-    def train_test_split(self, test_size=0.2, startify_column='item_CreatedDate'):
-        self.df = self._truncate_column_values(column=startify_column)
-        df_sorted = self.df.sort_values(by=startify_column)
-        df_sorted = df_sorted[df_sorted['item_ResponseState'].notnull()] ## assert 'Accepted' and 'Rejected' cases
-        train_df, test_df = train_test_split(df_sorted, test_size=test_size,
-                                             stratify=df_sorted[startify_column])
+    def _eliminate_null_claims(self,df_sorted):
+        return df_sorted[df_sorted['item_ResponseState'].notnull()] ## assert 'Accepted' and 'Rejected' cases
 
-        return train_df, test_df
+    def train_test_split(self, id_column='transaction_RequestId', test_size=0.2, random_state=None):
+        df = self.df
+        df = self._eliminate_null_claims(df) ## assert 'Accepted' and 'Rejected' cases
+
+        unique_ids = df[id_column].unique()
+        train_ids, test_ids = train_test_split(unique_ids, test_size=test_size, random_state=random_state)
+
+        train_data = df[df[id_column].isin(train_ids)]
+        test_data = df[df[id_column].isin(test_ids)]
+
+        return train_data, test_data
+
     def _extract_age(self,age_string: str):
         y_index = age_string.find('Y')
         years_str = age_string[:y_index]
@@ -151,16 +158,17 @@ class MergedDataPreprocessing:
         else:
             return 'U00–U99'
 
-    def age_gender_item_ids_prep(self):
+    def age_gender_item_ids_prep(self,item_encoding = True):
 
         self.df.transaction_PatientAge = self.df.transaction_PatientAge.apply(self._extract_age)
         self.df.transaction_PatientEnGender = self.df.transaction_PatientEnGender.apply(self._process_gender)
-        self.df.item_NameEn = self._label_encode_column(column_name='item_NameEn', min_count=15)
         self.df.transaction_DiagnosisIds = self.df.transaction_DiagnosisIds.apply(self._get_parent_family)
         self.df.transaction_DiagnosisIds = self._label_encode_column(column_name='transaction_DiagnosisIds', min_count=100)
+        if item_encoding:
+            self.df.item_NameEn = self._label_encode_column(column_name='item_NameEn', min_count=15)
 
-        # TODO: must group-by before filling with average
+        # TODO: must group-by item-specialty before filling with average
         column_average = self.df.item_Price.mean()
-        self.df.item_Price.fillna(column_average, inplace=True)
+        self.df.item_Price = self.df.item_Price.fillna(column_average)
 
         return self.df
