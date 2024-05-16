@@ -158,7 +158,7 @@ class MergedDataPreprocessing:
         else:
             return 'U00–U99'
 
-    def age_gender_item_ids_prep(self,item_encoding = True):
+    def age_gender_item_ids_prep(self,item_encoding=True):
 
         self.df.transaction_PatientAge = self.df.transaction_PatientAge.apply(self._extract_age)
         self.df.transaction_PatientEnGender = self.df.transaction_PatientEnGender.apply(self._process_gender)

@@ -37,7 +37,7 @@ class LSTMEmbedding:
         X_pad = pad_sequences(encoded_data, maxlen=self.max_seq_length, padding='post')
         return X_pad
 
-    def preprocess_data(self, X,needs_tokenization=True):
+    def preprocess_data(self, X, needs_tokenization=True):
         string_columns = X.select_dtypes(include=['object']).columns
         filtered_data = X[string_columns].fillna('').astype(str)
         concatenated_data = filtered_data.apply(lambda x: ' '.join(x), axis=1)
@@ -49,7 +49,7 @@ class LSTMEmbedding:
     def _build_model(self, input_shape):
         self.model = Sequential([
             Input(shape=input_shape),
-            LSTM(16),
+            LSTM(32),
             Dense(32, activation='relu'),
             Dense(1, activation='sigmoid')   ])
 
