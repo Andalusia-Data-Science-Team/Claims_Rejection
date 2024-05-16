@@ -1,6 +1,8 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
+from src.lstm_encoder import LSTMEmbedding
+
 
 class DataLoader:
     def __init__(self, source='SNB'):
@@ -61,6 +63,7 @@ class DataLoader:
 class MergedDataPreprocessing:
     def __init__(self, df):
         self.df = df
+        self.lstm_embedding = LSTMEmbedding()
 
     def _truncate_column_values(self, column):
         df = self.df.copy()
@@ -172,3 +175,11 @@ class MergedDataPreprocessing:
         self.df.item_Price = self.df.item_Price.fillna(column_average)
 
         return self.df
+
+    def column_embedding(self,df1, textual_col='item_NameEn'):
+        arr2 = self.lstm_embedding.embedding_vector(df1[:], reload_model=True)
+        new_cols_names = [textual_col + str(i + 1) for i in range(arr2.shape[1])]
+        df2 = pd.DataFrame(arr2)
+        df2.columns = new_cols_names
+        df1 = pd.concat([df1, df2], axis=1)
+        return df1
