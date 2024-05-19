@@ -176,10 +176,12 @@ class MergedDataPreprocessing:
 
         return self.df
 
-    def column_embedding(self,df1, textual_col='item_NameEn'):
+    def column_embedding(self, df1, textual_col='item_NameEn'):
         arr2 = self.lstm_embedding.embedding_vector(df1[:], reload_model=True)
         new_cols_names = [textual_col + str(i + 1) for i in range(arr2.shape[1])]
         df2 = pd.DataFrame(arr2)
         df2.columns = new_cols_names
-        df1 = pd.concat([df1, df2], axis=1)
+        for col in df2.columns:
+            df1.loc[:, col] = df2[col].values
+
         return df1
