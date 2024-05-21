@@ -161,18 +161,56 @@ class MergedDataPreprocessing:
         else:
             return 'U00–U99'
 
+    def _categorize_age(self,age):
+        if age <= 2:
+            return 'Kids (0-2)'
+        elif 3 <= age <= 10:
+            return 'Age 3-10'
+        elif 11 <= age <= 17:
+            return 'Age 11-17'
+        elif 18 <= age <= 24:
+            return 'Age 18-24'
+        elif 25 <= age <= 34:
+            return 'Age 25-34'
+        elif 35 <= age <= 44:
+            return 'Age 35-44'
+        elif 45 <= age <= 54:
+            return 'Age 45-54'
+        elif 55 <= age <= 64:
+            return 'Age 55-64'
+        else:
+            return 'Age 65+'
+
+    def _map_age_range(self,age_range):
+        mapping = {
+        'Kids (0-2)': 1,
+        'Age 3-10': 2,
+        'Age 11-17': 3,
+        'Age 18-24': 4,
+        'Age 25-34': 5,
+        'Age 35-44': 6,
+        'Age 45-54': 7,
+        'Age 55-64': 8,
+        'Age 65+': 9
+        }
+        return mapping[age_range]
+
     def age_gender_item_ids_prep(self,item_encoding=True):
 
         self.df.transaction_PatientAge = self.df.transaction_PatientAge.apply(self._extract_age)
+        self.df['PatientAgeRange'] = self.df.transaction_PatientAge.apply(self._categorize_age)
+        self.df['PatientAgeRange'] = self.df.PatientAgeRange.apply(self._map_age_range)
+
         self.df.transaction_PatientEnGender = self.df.transaction_PatientEnGender.apply(self._process_gender)
         self.df.transaction_DiagnosisIds = self.df.transaction_DiagnosisIds.apply(self._get_parent_family)
         self.df.transaction_DiagnosisIds = self._label_encode_column(column_name='transaction_DiagnosisIds', min_count=100)
         if item_encoding:
             self.df.item_NameEn = self._label_encode_column(column_name='item_NameEn', min_count=15)
 
-        # TODO: must group-by item-specialty before filling with average
-        column_average = self.df.item_Price.mean()
-        self.df.item_Price = self.df.item_Price.fillna(column_average)
+        self.df['item_Diagnosis'] = self.df.groupby('transaction_DiagnosisIds')['item_Price'].transform('mean')
+
+        self.df['item_Price'] = self.df.apply(
+            lambda row: row['item_NameEn'] if pd.isnull(row['item_Price']) and not pd.isnull(row['item_NameEn']) else row['item_Price'],axis=1)
 
         return self.df
 

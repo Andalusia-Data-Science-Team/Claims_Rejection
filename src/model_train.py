@@ -19,7 +19,7 @@ def round_two(val):
 def encode_label(labels:list):
     out = []
     for i in range(len(labels)):
-        if labels[i] == 'approved':
+        if labels[i].lower().strip() == 'approved':
             out.append(1)
         else:
             out.append(0)
