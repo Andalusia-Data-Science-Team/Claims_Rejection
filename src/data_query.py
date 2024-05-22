@@ -16,8 +16,14 @@ def get_connection_from_source(source):
     '''
     return conn_str
 
-def load_query(query,source='BI'):
+def load_query(TABLE_NAME='Claim_Visit', source='BI'):
+    """
+    :param TABLE_NAME: Claim_Visit,Claim_Service, purchaser_Contract, Insurance_AHJ, Diagnosis
+    :param source: BI -> BI-03
+    :return: df
+    """
     conn_str = get_connection_from_source(source)
+    query = f'''SELECT *  FROM DWH_Claims.dbo.{TABLE_NAME}'''
 
     connect_string = urllib.parse.quote_plus(conn_str)
     engine = sqlalchemy.create_engine(f'mssql+pyodbc:///?odbc_connect={connect_string}', fast_executemany=True)
