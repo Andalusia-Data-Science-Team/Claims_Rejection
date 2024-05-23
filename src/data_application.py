@@ -39,14 +39,15 @@ class DataFrameProcessor:
         single_value_columns = unique_counts[unique_counts <= 1].index.tolist()
         return single_value_columns
 
-    def _drop_columns_with_substring(self, substring):
+    def _drop_columns_with_substring(self, substring:str):
         columns_to_drop = [col for col in self.df.columns if substring in col]
         df2 = self.df.drop(columns=columns_to_drop)
         return df2
 
-    def save_dropped_cols(self):
-        dropped_columns = self._get_no_variance_cols()
-        self._add_list_to_json(list_name='dropped_columns',values=dropped_columns)
+    def save_dropped_cols(self,df_index:str,other_columns=[]):
+        dropped_columns = self._get_no_variance_cols() + other_columns
+        list_name = df_index + '_dropped'
+        self._add_list_to_json(list_name=list_name,values=dropped_columns)
 
     def filter_high_variance_features(self):
         no_vars = list(self._get_no_variance_cols())
@@ -55,12 +56,18 @@ class DataFrameProcessor:
         self.df = self._drop_columns_with_substring('Ar')
         return self.df
 
-    def drop_columns(self,columns_name):
-        columns_name = self._read_list_from_json(list_name='dropped_columns')
-        for col in columns_name:
+    def drop_columns(self,list_name):
+        dropped_cols = self._read_list_from_json(list_name=list_name)
+        for col in dropped_cols:
             if col in self.df.columns:
-                self.df.drop(columns=[col])
+                self.df.drop(columns=[col],inplace=True)
         return self.df
+
+    def store_current_columns(self,df_index):
+        list_name = df_index + '_columns'
+        self._add_list_to_json(list_name=list_name,values=list(self.df.columns))
+
+
 ### Use Case
 # processor = DataFrameProcessor(df)
 # types_df = processor.get_types()

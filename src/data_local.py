@@ -5,24 +5,34 @@ from src.lstm_encoder import LSTMEmbedding
 
 
 class DataLoader:
-    def __init__(self, source='SNB'):
+    def __init__(self, source='HJH'):
         self.source = source
         self.PATH = 'data/'+source +'/'
 
     def load_local(self):
-        PATH_err  = self.PATH + 'ClaimResponseErrorsLog.xlsx'
-        PATH_item = self.PATH + 'ClaimItem.xlsx'
-        PATH_trans = self.PATH + 'ClaimTransaction.xlsx'
+        if self.source == 'SNB':
+            PATH_err  = self.PATH + 'ClaimResponseErrorsLog.xlsx'
+            PATH_item = self.PATH + 'ClaimItem.xlsx'
+            PATH_trans = self.PATH + 'ClaimTransaction.xlsx'
 
-        df_error = pd.read_excel(PATH_err)
-        df_item = pd.read_excel(PATH_item)
-        df_trans = pd.read_excel(PATH_trans)
+            df_error = pd.read_excel(PATH_err)
+            df_item = pd.read_excel(PATH_item)
+            df_trans = pd.read_excel(PATH_trans)
 
-        return df_trans, df_item, df_error
+            return df_trans, df_item, df_error
+        else:
+            PATH_1 = self.PATH + 'Claim_Service_scan.xlsx'
+            PATH_2 = self.PATH + 'Claim_Visit.xlsx'
+            PATH_3 = self.PATH + 'Diagnosis.xlsx'
+
+            df_service = pd.read_excel(PATH_1)
+            df_visit   = pd.read_excel(PATH_2)
+            df_diagnose= pd.read_excel(PATH_3)
+
+            return df_diagnose, df_service, df_visit
 
     def _get_transaction_requests(self,df_trans):
         return df_trans[df_trans['TransactionType']=='Request']
-
 
     def split_transaction(self,df_trans):
         df_trans_req = df_trans[df_trans['TransactionType']=='Request']
@@ -35,19 +45,21 @@ class DataLoader:
         return df2
 
     def load_data(self):
-        df_trans, df_item, df_error = self.load_local()
+        if self.source == 'SNB':
+            df_trans, df_item, df_error = self.load_local()
 
-        df_trans = self._add_prefix_to_columns(df_trans, 'transaction_')
-        df_item = self._add_prefix_to_columns(df_item, 'item_')
-        df_error = self._add_prefix_to_columns(df_error, 'error_')
+            df_trans = self._add_prefix_to_columns(df_trans, 'transaction_')
+            df_item = self._add_prefix_to_columns(df_item, 'item_')
+            df_error = self._add_prefix_to_columns(df_error, 'error_')
 
-        sub_df = pd.merge(df_trans, df_item, left_on='transaction_Id', right_on='item_ClaimTransactionID', how='left')
-        merged_df = pd.merge(sub_df, df_error, left_on='transaction_Id', right_on='error_ClaimTransactionId', how='left')
+            sub_df = pd.merge(df_trans, df_item, left_on='transaction_Id', right_on='item_ClaimTransactionID', how='left')
+            merged_df = pd.merge(sub_df, df_error, left_on='transaction_Id', right_on='error_ClaimTransactionId', how='left')
 
-        df_request = merged_df[merged_df['transaction_TransactionType']  == 'Request']
-        df_response = merged_df[merged_df['transaction_TransactionType'] != 'Request']
+            df_request = merged_df[merged_df['transaction_TransactionType']  == 'Request']
+            df_response = merged_df[merged_df['transaction_TransactionType'] != 'Request']
 
-        return df_request, df_response
+            return df_request, df_response
+
 
     def merge_item_trans(self,df_item=None, df_trans=None):
         if df_item == None or df_trans == None:

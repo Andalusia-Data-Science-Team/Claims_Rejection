@@ -57,6 +57,37 @@
         "APPROVAL_RESPONSE_SYSTEM",
         "PRESCRIBED_CODE",
         "SELECTION_REASON",
-        "SELECTION_REASON_DISPLAY"
+        "SELECTION_REASON_DISPLAY",
+        "PRE_AUTH_OFFLINE_DATE"
+    ],
+    "service_columns": [
+        "CREATED_BY_USER",
+        "CREATION_DATE",
+        "VISIT_ID",
+        "NET_WITH_VAT",
+        "SERVICE_DESCRIPTION",
+        "QTY",
+        "LINE_CLAIMED_AMOUNT",
+        "LINE_CLAIMED_AMOUNT_SAR",
+        "CO_PAY",
+        "CO_INSURANCE",
+        "LINE_ITEM_DISCOUNT",
+        "NET_AMOUNT",
+        "NET_VAT_AMOUNT",
+        "PATIENT_VAT_AMOUNT",
+        "VAT_PERCENTAGE",
+        "TREATMENT_TYPE_INDICATOR",
+        "SERVICE_TYPE",
+        "DURATION",
+        "QTY_STOCKED_UOM",
+        "UNIT_PRICE",
+        "OASIS_IOS_DESCRIPTION",
+        "SEQUENCE_NO",
+        "UNIT_PRICE_STOCKED_UOM",
+        "UNIT_PRICE_NET",
+        "DISCOUNT_PERCENTAGE",
+        "NOTES",
+        "OUTCOME",
+        "APPROVED_QUNATITY"
     ]
 }

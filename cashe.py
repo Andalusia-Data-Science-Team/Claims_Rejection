@@ -4,6 +4,8 @@ from src.data_application import DataFrameProcessor, model_columns
 from src.data_local import DataLoader
 from src.data_application import train_columns
 from src.model_train import encode_label
+
+
 def get_input():
     data_loader = DataLoader()
     df_trans_item = data_loader.merge_item_trans()
