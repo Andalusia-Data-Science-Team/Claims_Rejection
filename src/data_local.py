@@ -20,16 +20,15 @@ class DataLoader:
             df_trans = pd.read_excel(PATH_trans)
 
             return df_trans, df_item, df_error
+
         else:
             PATH_1 = self.PATH + 'Claim_Service_scan.xlsx'
-            PATH_2 = self.PATH + 'Claim_Visit.xlsx'
-            PATH_3 = self.PATH + 'Diagnosis.xlsx'
+            PATH_2 = self.PATH + 'Claim_Visit_scan.xlsx'
 
             df_service = pd.read_excel(PATH_1)
             df_visit   = pd.read_excel(PATH_2)
-            df_diagnose= pd.read_excel(PATH_3)
 
-            return df_diagnose, df_service, df_visit
+            return df_service, df_visit
 
     def _get_transaction_requests(self,df_trans):
         return df_trans[df_trans['TransactionType']=='Request']
@@ -38,6 +37,12 @@ class DataLoader:
         df_trans_req = df_trans[df_trans['TransactionType']=='Request']
         df_trans_res = df_trans[df_trans['TransactionType']=='Response']
         return df_trans_req, df_trans_res
+
+    def _drop_duplicates(self,df_visit,service_columns):
+        for col in list(df_visit.columns):
+            if col != 'VISIT_ID' and col in service_columns:
+                df_visit.drop(columns = [col],inplace=True)
+        return df_visit
 
     def _add_prefix_to_columns(self, df, prefix):
         df2 = df.copy()
@@ -60,16 +65,27 @@ class DataLoader:
 
             return df_request, df_response
 
+        else:
+            df_service, df_visit = self.load_local()
+            df_visit = self._drop_duplicates(df_visit,list(df_service.columns))
+            return df_service, df_visit
 
-    def merge_item_trans(self,df_item=None, df_trans=None):
-        if df_item == None or df_trans == None:
-            df_trans, df_item, _ = self.load_local()
-        df_trans = self._get_transaction_requests(df_trans)
+    def merge_item_trans(self,df_service=None, df_visit=None):
+        if self.source == 'SNB':
+            if df_item == None or df_trans == None:
+                df_trans, df_item, _ = self.load_local()
+            df_trans = self._get_transaction_requests(df_trans)
 
-        df_trans = self._add_prefix_to_columns(df_trans, 'transaction_')
-        df_item = self._add_prefix_to_columns(df_item, 'item_')
-        merged_df = pd.merge(df_trans, df_item, left_on='transaction_RequestId', right_on='item_ClaimRequestID', how='right')
-        return merged_df
+            df_trans = self._add_prefix_to_columns(df_trans, 'transaction_')
+            df_item = self._add_prefix_to_columns(df_item, 'item_')
+            merged_df = pd.merge(df_trans, df_item, left_on='transaction_RequestId', right_on='item_ClaimRequestID', how='right')
+            return merged_df
+        else:
+            if df_service == None or df_visit == None:
+                df_service, df_visit = self.load_data()
+            merged_df = pd.merge(df_service, df_visit, on='VISIT_ID',how='inner')
+            return merged_df
+
 
 
 class MergedDataPreprocessing:
@@ -86,7 +102,7 @@ class MergedDataPreprocessing:
     def _eliminate_null_claims(self,df_sorted):
         return df_sorted[df_sorted['item_ResponseState'].notnull()] ## assert 'Accepted' and 'Rejected' cases
 
-    def train_test_split(self, id_column='transaction_RequestId', test_size=0.2, random_state=None):
+    def train_test_split(self, id_column='Visit_ID', test_size=0.2, random_state=None):
         df = self.df
         df = self._eliminate_null_claims(df) ## assert 'Accepted' and 'Rejected' cases
 
