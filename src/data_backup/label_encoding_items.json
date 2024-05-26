@@ -1,1 +1,86 @@
-model_columns = ['transaction_PatientAge', 'transaction_PatientEnGender','item_ServiceId','item_Price','item_Status','item_Sequence','item_RequestQuantity','item_ResponseQuantity','transaction_DiagnosisIds','transaction_PhysicianIds','transaction_TransactionType']
+{
+    "name": "data_columns_info_encoder",
+    "version": "1.0.0",
+    "PATIENT_GENDER": {
+        "M": 1,
+        "U": 1,
+        "F": 0
+    },
+    "EMERGENCY_INDICATOR": {
+        "N": 0,
+        "Y": 1
+    },
+    "PATIENT_NATIONALITY": {
+        "CANADIAN": 1,
+        "YEMENI": 1,
+        "INDIAN": 0,
+        "LEBANESE": 0,
+        "NIGERIA": 0,
+        "BAHRINI": 1,
+        "EMIRATI": 1,
+        "ERYTRIAN": 0,
+        "TURKIAN": 0,
+        "BLOOSHI": 0,
+        "MALI": 0,
+        "TCHAD": 0,
+        "SYRIAN": 0,
+        "BARMAWI": 0,
+        "NEPAL": 0,
+        "SOUTH AFRICA": 0,
+        "OHIO - USA": 1,
+        "SRI-LANKAN": 0,
+        "SOMALIAN": 0,
+        "PALASTINIAN": 0,
+        "SPANISH": 1,
+        "SUDANESE": 0,
+        "RUSIAN": 1,
+        "BRITISH": 2,
+        "EGYPTIAN": 0,
+        "BANGLADISH": 0,
+        "JORDON": 1,
+        "SWEDISH": 1,
+        "JORDANIAN": 0,
+        "ETHUPIAN": 0,
+        "TURKISTAN": 0,
+        "ITALIAN": 1,
+        "AFGHANI": 0,
+        "FRENCH": 1,
+        "SAUDI ARABIAN": 2,
+        "TUNIS": 0,
+        "PHILLIPINO": 0,
+        "OTHERS": 0,
+        "ALGERIA": 0,
+        "PAKESTANI": 0,
+        "INDONISIAN": 0,
+        "AMERICAN": 2,
+        "GERMAN": 1,
+        "IRETRIAN": 0,
+        "IRISH": 2,
+        "KINIAN": 0,
+        "MOROCCAN": 0
+    },
+    "PATIENT_MARITAL_STATUS": {
+        "M": 1,
+        "S": 0
+    },
+    "CLAIM_TYPE": {
+        "I": "In-patient",
+        "O": "Out-patient",
+        "E": "Emergency"
+    },
+    "NEW_BORN": {
+        "N": 0,
+        "Y": 1
+    },
+    "AGE_RANGE": {
+        "Kids (0-2)": 1,
+        "Age 3-10": 2,
+        "Age 11-17": 3,
+        "Age 18-24": 4,
+        "Age 25-34": 5,
+        "Age 35-44": 6,
+        "Age 45-54": 7,
+        "Age 55-64": 8,
+        "Age 65+": 9
+    }
+}

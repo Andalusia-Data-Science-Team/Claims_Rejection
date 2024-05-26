@@ -1,7 +1,7 @@
 {
     "name": "data_columns_info_backup",
     "version": "1.0.0",
-    "service_dropped": [
+    "claim_service_dropped": [
         "HOSPITAL_ID",
         "IS_FETCHED",
         "INVOICE_CREATED_BY",
@@ -60,7 +60,7 @@
         "SELECTION_REASON_DISPLAY",
         "PRE_AUTH_OFFLINE_DATE"
     ],
-    "service_columns": [
+    "claim_service_columns": [
         "CREATED_BY_USER",
         "CREATION_DATE",
         "VISIT_ID",
@@ -90,7 +90,7 @@
         "OUTCOME",
         "APPROVED_QUNATITY"
     ],
-    "visit_dropped": [
+    "claim_visit_dropped": [
         "HOSPITAL_ID",
         "VISIT_TYPE",
         "RESERVATION_NO",
@@ -179,7 +179,7 @@
         "PATIENT_FIRST_NAME",
         "DOCTOR_SPECIALTY"
     ],
-    "visit_columns": [
+    "claim_visit_columns": [
         "VISIT_ID",
         "REQUEST_DATE",
         "VISIT_NO",

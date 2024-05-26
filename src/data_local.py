@@ -1,8 +1,9 @@
 import pandas as pd
+import json
+
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from src.lstm_encoder import LSTMEmbedding
-
 
 class DataLoader:
     def __init__(self, source='HJH'):
@@ -10,25 +11,14 @@ class DataLoader:
         self.PATH = 'data/'+source +'/'
 
     def load_local(self):
-        if self.source == 'SNB':
-            PATH_err  = self.PATH + 'ClaimResponseErrorsLog.xlsx'
-            PATH_item = self.PATH + 'ClaimItem.xlsx'
-            PATH_trans = self.PATH + 'ClaimTransaction.xlsx'
 
-            df_error = pd.read_excel(PATH_err)
-            df_item = pd.read_excel(PATH_item)
-            df_trans = pd.read_excel(PATH_trans)
+        PATH_1 = self.PATH + 'Claim_Service_scan.xlsx'
+        PATH_2 = self.PATH + 'Claim_Visit_scan.xlsx'
 
-            return df_trans, df_item, df_error
+        df_service = pd.read_excel(PATH_1)
+        df_visit   = pd.read_excel(PATH_2)
 
-        else:
-            PATH_1 = self.PATH + 'Claim_Service_scan.xlsx'
-            PATH_2 = self.PATH + 'Claim_Visit_scan.xlsx'
-
-            df_service = pd.read_excel(PATH_1)
-            df_visit   = pd.read_excel(PATH_2)
-
-            return df_service, df_visit
+        return df_service, df_visit
 
     def _get_transaction_requests(self,df_trans):
         return df_trans[df_trans['TransactionType']=='Request']
@@ -50,42 +40,16 @@ class DataLoader:
         return df2
 
     def load_data(self):
-        if self.source == 'SNB':
-            df_trans, df_item, df_error = self.load_local()
+        df_service, df_visit = self.load_local()
 
-            df_trans = self._add_prefix_to_columns(df_trans, 'transaction_')
-            df_item = self._add_prefix_to_columns(df_item, 'item_')
-            df_error = self._add_prefix_to_columns(df_error, 'error_')
-
-            sub_df = pd.merge(df_trans, df_item, left_on='transaction_Id', right_on='item_ClaimTransactionID', how='left')
-            merged_df = pd.merge(sub_df, df_error, left_on='transaction_Id', right_on='error_ClaimTransactionId', how='left')
-
-            df_request = merged_df[merged_df['transaction_TransactionType']  == 'Request']
-            df_response = merged_df[merged_df['transaction_TransactionType'] != 'Request']
-
-            return df_request, df_response
-
-        else:
-            df_service, df_visit = self.load_local()
-            df_visit = self._drop_duplicates(df_visit,list(df_service.columns))
-            return df_service, df_visit
+        df_visit = self._drop_duplicates(df_visit,list(df_service.columns)) ## drop columns duplications
+        return df_service, df_visit
 
     def merge_item_trans(self,df_service=None, df_visit=None):
-        if self.source == 'SNB':
-            if df_item == None or df_trans == None:
-                df_trans, df_item, _ = self.load_local()
-            df_trans = self._get_transaction_requests(df_trans)
-
-            df_trans = self._add_prefix_to_columns(df_trans, 'transaction_')
-            df_item = self._add_prefix_to_columns(df_item, 'item_')
-            merged_df = pd.merge(df_trans, df_item, left_on='transaction_RequestId', right_on='item_ClaimRequestID', how='right')
-            return merged_df
-        else:
-            if df_service == None or df_visit == None:
-                df_service, df_visit = self.load_data()
-            merged_df = pd.merge(df_service, df_visit, on='VISIT_ID',how='inner')
-            return merged_df
-
+        if df_service is None or df_visit is None: ## reload is required
+            df_service, df_visit = self.load_data()
+        merged_df = pd.merge(df_service, df_visit, on='VISIT_ID',how='inner') ## merging on VISIT_ID
+        return merged_df
 
 
 class MergedDataPreprocessing:
@@ -93,16 +57,42 @@ class MergedDataPreprocessing:
         self.df = df
         self.lstm_embedding = LSTMEmbedding()
 
+    def _add_list_to_json(self,list_name, values,file_path = 'src/data_backup/label_encoding_items.json'):
+        try:
+            with open(file_path, 'r') as file:
+                data = json.load(file)
+        except FileNotFoundError:
+            data = {}
+        data[list_name] = values
+        with open(file_path, 'w') as file:
+            json.dump(data, file, indent=4)
+
+    def _read_list_from_json(self,column_name, file_path = 'src/data_backup/label_encoding_items.json'):
+        try:
+            with open(file_path, 'r') as file:
+                data = json.load(file)
+                return data.get(column_name, None)
+        except FileNotFoundError:
+            print(f"File {file_path} not found.")
+            return None
+        except json.JSONDecodeError:
+            print(f"Error decoding JSON from the file {file_path}.")
+            return None
+
     def _truncate_column_values(self, column):
+        '''
+        :param column: date column value
+        :return: utputs only yy/mm
+        '''
         df = self.df.copy()
         df[column] = df[column].astype(str).str[:7]
 
         return df
 
     def _eliminate_null_claims(self,df_sorted):
-        return df_sorted[df_sorted['item_ResponseState'].notnull()] ## assert 'Accepted' and 'Rejected' cases
+        return df_sorted[df_sorted['OUTCOME'].notnull()] ## assert 'APPROVED' or 'PARTIAL'
 
-    def train_test_split(self, id_column='Visit_ID', test_size=0.2, random_state=None):
+    def train_test_split(self, id_column='VISIT_ID', test_size=0.2, random_state=None):
         df = self.df
         df = self._eliminate_null_claims(df) ## assert 'Accepted' and 'Rejected' cases
 
@@ -115,6 +105,8 @@ class MergedDataPreprocessing:
         return train_data, test_data
 
     def _extract_age(self,age_string: str):
+        if type(age_string) == int:
+            return age_string
         y_index = age_string.find('Y')
         years_str = age_string[:y_index]
         years = int(years_str)
@@ -223,22 +215,25 @@ class MergedDataPreprocessing:
         }
         return mapping[age_range]
 
-    def age_gender_item_ids_prep(self,item_encoding=True):
+    def columns_prep(self,service_encoding=True):
+        for column in ["PATIENT_GENDER","EMERGENCY_INDICATOR","PATIENT_NATIONALITY","PATIENT_MARITAL_STATUS","CLAIM_TYPE","NEW_BORN"]:
+            column_encoding = self._read_list_from_json(column_name=column)
+            self.df[column] = self.df[column].replace(column_encoding)
 
-        self.df.transaction_PatientAge = self.df.transaction_PatientAge.apply(self._extract_age)
-        self.df['PatientAgeRange'] = self.df.transaction_PatientAge.apply(self._categorize_age)
-        self.df['PatientAgeRange'] = self.df.PatientAgeRange.apply(self._map_age_range)
+        self.df.PATIENT_AGE = self.df.PATIENT_AGE.apply(self._extract_age) ## deprecated
 
-        self.df.transaction_PatientEnGender = self.df.transaction_PatientEnGender.apply(self._process_gender)
-        self.df.transaction_DiagnosisIds = self.df.transaction_DiagnosisIds.apply(self._get_parent_family)
-        self.df.transaction_DiagnosisIds = self._label_encode_column(column_name='transaction_DiagnosisIds', min_count=100)
-        if item_encoding:
-            self.df.item_NameEn = self._label_encode_column(column_name='item_NameEn', min_count=15)
+        self.df['PatientAgeRange'] = self.df.PATIENT_AGE.apply(self._categorize_age)
 
-        self.df['item_Diagnosis'] = self.df.groupby('transaction_DiagnosisIds')['item_Price'].transform('mean')
+        age_encoding = self._read_list_from_json(column_name='AGE_RANGE')
+        self.df['PatientAgeRange'] = self.df.PatientAgeRange.replace(age_encoding)
 
-        self.df['item_Price'] = self.df.apply(
-            lambda row: row['item_NameEn'] if pd.isnull(row['item_Price']) and not pd.isnull(row['item_NameEn']) else row['item_Price'],axis=1)
+        #self.df.transaction_DiagnosisIds = self._label_encode_column(column_name='transaction_DiagnosisIds', min_count=100)
+        if service_encoding:
+            self.df.item_NameEn = self._label_encode_column(column_name='SERVICE_DESCRIPTION', min_count=15)
+
+        #self.df['item_Diagnosis'] = self.df.groupby('transaction_DiagnosisIds')['item_Price'].transform('mean')
+
+
 
         return self.df
 
@@ -251,3 +246,20 @@ class MergedDataPreprocessing:
             df1.loc[:, col] = df2[col].values
 
         return df1
+
+    def store_current_columns(self,df_index,encoding_values={}):
+        self._add_list_to_json(list_name=df_index,values=encoding_values)
+
+'''
+nations_dict = {}
+for nation in set(df_original.PATIENT_NATIONALITY):
+    if nation in ["SAUDI ARABIAN","AMERICAN","BRITISH","IRISH"]:
+        nations_dict[nation] = 2
+    elif nation in ['GERMAN','RUSIAN','SWEDISH','EMIRATI','CANADIAN','FRENCH','SPANISH','ITALIAN',"JORDON","YEMENI","OHIO - USA","BAHRINI"]:
+        nations_dict[nation] = 1
+    else:
+        nations_dict[nation] = 0
+
+nations_dict
+'''
+#preprocessing.store_current_columns(df_index='PATIENT_NATIONALITY',encoding_values = nations_dict)

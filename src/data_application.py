@@ -49,7 +49,7 @@ class DataFrameProcessor:
         list_name = df_index + '_dropped'
         self._add_list_to_json(list_name=list_name,values=dropped_columns)
 
-    def filter_high_variance_features(self):
+    def filter_high_variance_features(self):  ## To keep high variance columns only and remove low varaince ones
         no_vars = list(self._get_no_variance_cols())
         high_var_cols = [col for col in self.df.columns if col not in no_vars]
         self.df = self.df[high_var_cols]
@@ -72,3 +72,4 @@ class DataFrameProcessor:
 # processor = DataFrameProcessor(df)
 # types_df = processor.get_types()
 # df = processor.filter_high_variance_features()
+# processor.save_dropped_cols(other_columns)
