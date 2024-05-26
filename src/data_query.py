@@ -5,10 +5,14 @@ import json
 
 with open('src\data_backup\passcode.json', 'r') as file:
     data_dict = json.load(file)
+
 db_names = data_dict['DB_NAMES']
 
+with open('src\data_backup\stored_info.json', 'r') as file:
+    table_info_dict = json.load(file)
+
 def get_connection_from_source(source):
-    passcodes = data_dict[source]
+    passcodes = db_names[source]
     server, db, uid, pwd, driver = passcodes['Server'],passcodes['Database'],passcodes['UID'],passcodes['PWD'],passcodes['driver']
 
     conn_str = f'''
@@ -23,7 +27,19 @@ def load_query(TABLE_NAME='Claim_Visit', source='BI'):
     :return: df
     """
     conn_str = get_connection_from_source(source)
-    query = f'''SELECT *  FROM DWH_Claims.dbo.{TABLE_NAME}'''
+
+    if f'{TABLE_NAME.lower()}_columns' in table_info_dict.keys():
+        # Example list of columns
+        table_columns = table_info_dict[f'{TABLE_NAME.lower()}_columns']
+
+        # Convert the list to a comma-separated string
+        columns_string = ", ".join(table_columns)
+    else:
+        # handle the case of unfiltered tables
+        columns_string = '*'
+
+
+    query = f'''SELECT  {columns_string}  FROM DWH_Claims.dbo.{TABLE_NAME}'''
 
     connect_string = urllib.parse.quote_plus(conn_str)
     engine = sqlalchemy.create_engine(f'mssql+pyodbc:///?odbc_connect={connect_string}', fast_executemany=True)
