@@ -1,0 +1,9 @@
+notebooks/data_loader_SNB.ipynb
+notebooks/model_training_SNB.ipynb
+notebooks/text_encoding_SNB.ipynb
+src/data_backup/passcode.json
+data
+src/__pycache__/
+src/data_encoder
+__pycache__
+.idea

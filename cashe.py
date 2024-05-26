@@ -1,17 +1,17 @@
 import pandas as pd
-
-from src.data_application import DataFrameProcessor, model_columns
+from src.data_application import DataFrameProcessor
 from src.data_local import DataLoader
 from src.data_application import train_columns
 from src.model_train import encode_label
 
+def get_cashed_input():
+    return pd.read_parquet('data/HJH/prq/df.parquet')
+
 
 def get_input():
     data_loader = DataLoader()
-    df_trans_item = data_loader.merge_item_trans()
-    processor = DataFrameProcessor(df_trans_item)
-    df_trans_item = processor.filter_high_variance_features()
-    return df_trans_item[model_columns]
+    df_visit_service = data_loader.merge_item_trans() ## High variance filter is done already
+    return df_visit_service
 
 def get_train_test_split():
     df_train = pd.read_excel('data/SplittedData/SNB_train_data.xlsx')
