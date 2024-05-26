@@ -104,14 +104,6 @@ class MergedDataPreprocessing:
 
         return train_data, test_data
 
-    def _extract_age(self,age_string: str):
-        if type(age_string) == int:
-            return age_string
-        y_index = age_string.find('Y')
-        years_str = age_string[:y_index]
-        years = int(years_str)
-
-        return years
 
     def _label_encode_column(self, column_name, min_count, replace_value='Other'):
         df = self.df.copy()
@@ -124,11 +116,6 @@ class MergedDataPreprocessing:
 
         return df[column_name].values
 
-    def _process_gender(self,gender_string: str):
-        if gender_string == 'Female':
-            return 0
-        else:
-            return 1
 
     def _get_parent_family(self, icd10_code):
         icd10_code = str(icd10_code)
@@ -201,29 +188,14 @@ class MergedDataPreprocessing:
         else:
             return 'Age 65+'
 
-    def _map_age_range(self,age_range):
-        mapping = {
-        'Kids (0-2)': 1,
-        'Age 3-10': 2,
-        'Age 11-17': 3,
-        'Age 18-24': 4,
-        'Age 25-34': 5,
-        'Age 35-44': 6,
-        'Age 45-54': 7,
-        'Age 55-64': 8,
-        'Age 65+': 9
-        }
-        return mapping[age_range]
-
     def columns_prep(self,service_encoding=True):
         for column in ["PATIENT_GENDER","EMERGENCY_INDICATOR","PATIENT_NATIONALITY","PATIENT_MARITAL_STATUS","CLAIM_TYPE","NEW_BORN"]:
             column_encoding = self._read_list_from_json(column_name=column)
             self.df[column] = self.df[column].replace(column_encoding)
 
-        self.df.PATIENT_AGE = self.df.PATIENT_AGE.apply(self._extract_age) ## deprecated
+        #self.df.PATIENT_AGE = self.df.PATIENT_AGE.apply(self._extract_age) ## deprecated
 
         self.df['PatientAgeRange'] = self.df.PATIENT_AGE.apply(self._categorize_age)
-
         age_encoding = self._read_list_from_json(column_name='AGE_RANGE')
         self.df['PatientAgeRange'] = self.df.PatientAgeRange.replace(age_encoding)
 
@@ -232,8 +204,6 @@ class MergedDataPreprocessing:
             self.df.item_NameEn = self._label_encode_column(column_name='SERVICE_DESCRIPTION', min_count=15)
 
         #self.df['item_Diagnosis'] = self.df.groupby('transaction_DiagnosisIds')['item_Price'].transform('mean')
-
-
 
         return self.df
 
@@ -247,7 +217,7 @@ class MergedDataPreprocessing:
 
         return df1
 
-    def store_current_columns(self,df_index,encoding_values={}):
+    def store_current_columns(self,df_index,encoding_values:dict):
         self._add_list_to_json(list_name=df_index,values=encoding_values)
 
 '''

@@ -1,5 +1,4 @@
 import pandas as pd
-from src.data_application import DataFrameProcessor
 from src.data_local import DataLoader
 from src.data_application import train_columns
 from src.model_train import encode_label
@@ -14,8 +13,8 @@ def get_input():
     return df_visit_service
 
 def get_train_test_split():
-    df_train = pd.read_excel('data/SplittedData/SNB_train_data.xlsx')
-    df_test  = pd.read_excel('data/SplittedData/SNB_test_data.xlsx')
+    df_train = pd.read_parquet('data/HJH/prq/train.parquet')
+    df_test  = pd.read_parquet('data/HJH/prq/test.parquet')
     return df_train, df_test
 
 
