@@ -12,8 +12,8 @@ class DataLoader:
 
     def load_local(self):
 
-        PATH_1 = self.PATH + 'Claim_Service_scan.xlsx'
-        PATH_2 = self.PATH + 'Claim_Visit_scan.xlsx'
+        PATH_1 = self.PATH + 'scanned/Claim_Service.xlsx'
+        PATH_2 = self.PATH + 'scanned/Claim_Visit.xlsx'
 
         df_service = pd.read_excel(PATH_1)
         df_visit   = pd.read_excel(PATH_2)
@@ -198,8 +198,8 @@ class MergedDataPreprocessing:
         self.df['PatientAgeRange'] = self.df.PATIENT_AGE.apply(self._categorize_age)
         age_encoding = self._read_list_from_json(column_name='AGE_RANGE')
         self.df['PatientAgeRange'] = self.df.PatientAgeRange.replace(age_encoding)
-
         #self.df.transaction_DiagnosisIds = self._label_encode_column(column_name='transaction_DiagnosisIds', min_count=100)
+
         if service_encoding:
             self.df.item_NameEn = self._label_encode_column(column_name='SERVICE_DESCRIPTION', min_count=15)
 
