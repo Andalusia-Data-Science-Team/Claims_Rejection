@@ -13,7 +13,7 @@ class LSTMEmbedding:
         self.input_shape = None
         self.encoder = None
         self.tokenizer = None
-        self.filepath = 'src/data_encoder/'
+        self.filepath = 'data/data_encoder/'
 
     def _tokenize_data(self,concatenated_data):
         if self.tokenizer is None:
