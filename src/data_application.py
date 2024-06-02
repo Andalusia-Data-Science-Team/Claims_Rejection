@@ -39,9 +39,11 @@ class DataFrameProcessor:
         single_value_columns = unique_counts[unique_counts <= 1].index.tolist()
         return single_value_columns
 
-    def _drop_columns_with_substring(self, substring:str):
-        columns_to_drop = [col for col in self.df.columns if substring in col]
-        df2 = self.df.drop(columns=columns_to_drop)
+    def _drop_columns_with_substring(self, substrings:list):
+        df2 = self.df.copy()
+        for substring in substrings:
+            columns_to_drop = [col for col in df2.columns if substring in col]
+            df2 = df2.drop(columns=columns_to_drop)
         return df2
 
     def save_dropped_cols(self,df_index:str,other_columns=[]):

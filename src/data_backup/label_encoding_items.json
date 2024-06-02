@@ -64,9 +64,14 @@
         "S": 0
     },
     "CLAIM_TYPE": {
-        "I": "In-patient",
-        "O": "Out-patient",
-        "E": "Emergency"
+        "I": 0,
+        "O": 1,
+        "E": 0
+    },
+    "TREATMENT_TYPE": {
+        "institutional": 0,
+        "professional": 1,
+        "oral": 0
     },
     "NEW_BORN": {
         "N": 0,
