@@ -4,6 +4,6 @@ notebooks/text_encoding_SNB.ipynb
 src/data_backup/passcode.json
 data
 src/__pycache__/
-src/data_encoder
+data/data_encoder
 __pycache__
 .idea

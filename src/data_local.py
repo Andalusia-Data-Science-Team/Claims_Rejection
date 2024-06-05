@@ -192,11 +192,16 @@ class MergedDataPreprocessing:
         eng_sentence = eng_sentence.split('-')[0]
         return eng_sentence
 
+    def _replace_strings_in_column(self, column_name, replacement_value=0):
+        self.df[column_name] = self.df[column_name].apply( lambda x: replacement_value if isinstance(x, str) else x )
+        return self.df
+
     def columns_prep(self,service_encoding=True):
         LIST_ENCODED_COLS = ["PATIENT_GENDER","EMERGENCY_INDICATOR","PATIENT_NATIONALITY","PATIENT_MARITAL_STATUS","CLAIM_TYPE","NEW_BORN","TREATMENT_TYPE"]
         for column in LIST_ENCODED_COLS:
             column_encoding = self._read_list_from_json(column_name=column)
             self.df[column] = self.df[column].replace(column_encoding)
+            self.df[column] = self.df[column].apply(self._replace_strings_in_column)
 
         self.df['PatientAgeRange'] = self.df.PATIENT_AGE.apply(self._categorize_age)
         age_encoding = self._read_list_from_json(column_name='AGE_RANGE')
