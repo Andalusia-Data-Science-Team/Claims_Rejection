@@ -293,5 +293,8 @@
     "ADJUDICATION_OUTCOME",
     "ARCHIVE_DATE",
     "FACILITY_ID"
-    ]
+    ],
+    "latest_update": [
+        "2024-04-30"
+    ],
 }

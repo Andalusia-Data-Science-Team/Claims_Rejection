@@ -97,7 +97,7 @@ class LSTMEmbedding:
             self.load_model()
 
         if self.model is None or self.tokenizer is None:
-            raise Exception("Model has not been loaded yet.")
+            raise Exception("Model has not been trained yet.")
 
         X_batch_preprocessed = self.preprocess_data(pd.DataFrame(X_batch), needs_tokenization=False)
         X_batch_preprocessed = self._tokenize_batch(X_batch_preprocessed)

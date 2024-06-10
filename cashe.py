@@ -1,7 +1,8 @@
 import pandas as pd
 from src.data_local import DataLoader
-from src.data_application import train_columns
 from src.model_train import encode_label
+
+train_columns = []
 
 def get_cashed_input():
     return pd.read_parquet('data/HJH/prq/df.parquet')
