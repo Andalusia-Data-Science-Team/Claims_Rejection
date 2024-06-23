@@ -20,10 +20,10 @@ class DataLoader:
 
         return df_service, df_visit
 
-    def _get_transaction_requests(self,df_trans):
+    def _get_transaction_requests(self,df_trans): ## deprecated
         return df_trans[df_trans['TransactionType']=='Request']
 
-    def split_transaction(self,df_trans):
+    def split_transaction(self,df_trans): ## deprecated
         df_trans_req = df_trans[df_trans['TransactionType']=='Request']
         df_trans_res = df_trans[df_trans['TransactionType']=='Response']
         return df_trans_req, df_trans_res
@@ -45,10 +45,10 @@ class DataLoader:
         df_visit = self._drop_duplicates(df_visit,list(df_service.columns)) ## drop columns duplications
         return df_service, df_visit
 
-    def merge_item_trans(self,df_service=None, df_visit=None):
+    def merge_visit_service(self,df_service=None, df_visit=None):
         if df_service is None or df_visit is None: ## reload is required
             df_service, df_visit = self.load_data()
-        merged_df = pd.merge(df_service, df_visit, on='VISIT_ID',how='inner') ## merging on VISIT_ID
+        merged_df = pd.merge(df_service, df_visit, left_on='VISIT_ID',how='left') ## merging on VISIT_ID
         return merged_df
 
 
@@ -115,7 +115,6 @@ class MergedDataPreprocessing:
         df[column_name] = label_encoder.fit_transform(df[column_name])
 
         return df[column_name].values
-
 
     def _get_parent_family(self, icd10_code):
         icd10_code = str(icd10_code)
@@ -188,17 +187,28 @@ class MergedDataPreprocessing:
         else:
             return 'Age 65+'
 
+    def _preprocess_service(self,eng_sentence):
+        eng_sentence = eng_sentence.split('-')[0]
+        return eng_sentence
+
+    def _replace_strings_in_column(self, undefined_inp:str,replacement_value = 0):
+        if type(undefined_inp) == str:
+            undefined_inp = replacement_value
+        return undefined_inp
+
     def columns_prep(self,service_encoding=True):
-        for column in ["PATIENT_GENDER","EMERGENCY_INDICATOR","PATIENT_NATIONALITY","PATIENT_MARITAL_STATUS","CLAIM_TYPE","NEW_BORN"]:
+        LIST_ENCODED_COLS = ["PATIENT_GENDER","EMERGENCY_INDICATOR","PATIENT_NATIONALITY","PATIENT_MARITAL_STATUS","CLAIM_TYPE","NEW_BORN","TREATMENT_TYPE"]
+        for column in LIST_ENCODED_COLS:
             column_encoding = self._read_list_from_json(column_name=column)
             self.df[column] = self.df[column].replace(column_encoding)
-
-        #self.df.PATIENT_AGE = self.df.PATIENT_AGE.apply(self._extract_age) ## deprecated
+            self.df[column] = self.df[column].apply(self._replace_strings_in_column)
 
         self.df['PatientAgeRange'] = self.df.PATIENT_AGE.apply(self._categorize_age)
         age_encoding = self._read_list_from_json(column_name='AGE_RANGE')
         self.df['PatientAgeRange'] = self.df.PatientAgeRange.replace(age_encoding)
         #self.df.transaction_DiagnosisIds = self._label_encode_column(column_name='transaction_DiagnosisIds', min_count=100)
+        self.df['PROVIDER_DEPARTMENT'] = self.df.PROVIDER_DEPARTMENT.apply(self._preprocess_service)
+
 
         if service_encoding:
             self.df.item_NameEn = self._label_encode_column(column_name='SERVICE_DESCRIPTION', min_count=15)
@@ -207,8 +217,9 @@ class MergedDataPreprocessing:
 
         return self.df
 
-    def column_embedding(self, df1, textual_col='item_NameEn'):
-        arr2 = self.lstm_embedding.embedding_vector(df1[:], reload_model=True)
+    def column_embedding(self, df1, textual_col=['SERVICE_DESCRIPTION', 'SERVICE_TYPE', 'OASIS_IOS_DESCRIPTION','PROVIDER_DEPARTMENT']):
+        concatenated_string = ' '.join(df1[textual_col].astype(str).values.flatten())
+        arr2 = self.lstm_embedding.embedding_vector(concatenated_string[:], reload_model=True)
         new_cols_names = [textual_col + str(i + 1) for i in range(arr2.shape[1])]
         df2 = pd.DataFrame(arr2)
         df2.columns = new_cols_names
@@ -217,8 +228,11 @@ class MergedDataPreprocessing:
 
         return df1
 
+
     def store_current_columns(self,df_index,encoding_values:dict):
         self._add_list_to_json(list_name=df_index,values=encoding_values)
+
+
 
 '''
 nations_dict = {}

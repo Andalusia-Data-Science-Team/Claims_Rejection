@@ -1,7 +1,8 @@
 import pandas as pd
 from src.data_local import DataLoader
-from src.data_application import train_columns
 from src.model_train import encode_label
+
+train_columns = []
 
 def get_cashed_input():
     return pd.read_parquet('data/HJH/prq/df.parquet')
@@ -9,7 +10,7 @@ def get_cashed_input():
 
 def get_input():
     data_loader = DataLoader()
-    df_visit_service = data_loader.merge_item_trans() ## High variance filter is done already
+    df_visit_service = data_loader.merge_visit_service() ## High variance filter is done already
     return df_visit_service
 
 def get_train_test_split():

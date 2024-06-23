@@ -94,6 +94,7 @@ class ModelTrainer:
         for key in evaluation_results.keys():
             all_models.append(key)
         return all_models
+
     def get_decision_tree_feature_importance(self):
         return self.dt_model.feature_importances_
 
@@ -159,10 +160,10 @@ def validate_folds(df_original,num_folds=5, metric="Accuracy"):
 
             df_train, df_test = preprocessing.train_test_split(random_state=fold_val)
             preprocessing_train = MergedDataPreprocessing(df_train)
-            df_train = preprocessing_train.age_gender_item_ids_prep(item_encoding=False)
+            df_train = preprocessing_train.columns_prep(item_encoding=False)
 
             preprocessing_test = MergedDataPreprocessing(df_test)
-            df_test = preprocessing_test.age_gender_item_ids_prep(item_encoding=False)
+            df_test = preprocessing_test.columns_prep(item_encoding=False)
 
             X_train = df_train[train_columns[:-1]];     y_train = df_train[train_columns[-1]]
             X_test = df_test[train_columns[:-1]];       y_test = df_test[train_columns[-1]]
