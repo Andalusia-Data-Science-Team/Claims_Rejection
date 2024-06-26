@@ -3,12 +3,12 @@ import sqlalchemy
 import pandas as pd
 import json
 
-with open('src\data_backup\passcode.json', 'r') as file:
+with open('..\Claims_Rejection\src\data_backup\passcode.json', 'r') as file:
     data_dict = json.load(file)
 
 db_names = data_dict['DB_NAMES']
 
-with open('src\data_backup\stored_info.json', 'r') as file:
+with open('..\Claims_Rejection\src\data_backup\stored_info.json', 'r') as file:
     table_info_dict = json.load(file)
 
 def get_connection_from_source(source):
@@ -49,6 +49,7 @@ def load_query(TABLE_NAME='Claim_Visit', source='BI'):
 
 
 def load_claims_bisample(source='BI'):
+    
     db_name = db_names[source]
 
     query = '''
