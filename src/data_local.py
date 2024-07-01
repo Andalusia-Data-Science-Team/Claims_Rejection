@@ -208,10 +208,10 @@ class MergedDataPreprocessing:
         self.df['PatientAgeRange'] = self.df.PatientAgeRange.replace(age_encoding)
         #self.df.transaction_DiagnosisIds = self._label_encode_column(column_name='transaction_DiagnosisIds', min_count=100)
         self.df['PROVIDER_DEPARTMENT'] = self.df.PROVIDER_DEPARTMENT.apply(self._preprocess_service)
-
+        self.df['DURATION'] = self.df['DURATION'].fillna(0)
 
         if service_encoding:
-            self.df.item_NameEn = self._label_encode_column(column_name='SERVICE_DESCRIPTION', min_count=15)
+            self.df.SERVICE_DESCRIPTION = self._label_encode_column(column_name='SERVICE_DESCRIPTION', min_count=15)
 
         #self.df['item_Diagnosis'] = self.df.groupby('transaction_DiagnosisIds')['item_Price'].transform('mean')
 

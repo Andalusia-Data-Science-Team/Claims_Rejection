@@ -1,6 +1,7 @@
 notebooks/data_loader_SNB.ipynb
 notebooks/model_training_SNB.ipynb
 notebooks/text_encoding_SNB.ipynb
+notebooks/Claims_Rejection_Classification.ipynb
 src/data_backup/passcode.json
 data
 src/__pycache__/
