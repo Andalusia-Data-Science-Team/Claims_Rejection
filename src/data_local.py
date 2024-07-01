@@ -211,7 +211,7 @@ class MergedDataPreprocessing:
         self.df['DURATION'] = self.df['DURATION'].fillna(0)
 
         if service_encoding:
-            self.df.item_NameEn = self._label_encode_column(column_name='SERVICE_DESCRIPTION', min_count=15)
+            self.df.SERVICE_DESCRIPTION = self._label_encode_column(column_name='SERVICE_DESCRIPTION', min_count=15)
 
         #self.df['item_Diagnosis'] = self.df.groupby('transaction_DiagnosisIds')['item_Price'].transform('mean')
 
