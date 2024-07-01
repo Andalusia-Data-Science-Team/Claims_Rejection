@@ -10,4 +10,7 @@ __pycache__
 /progress_thoughts_text/
 /analysis and investigations notebooks/
 progress_thoughts_text/img.png
+src/__pycache__/data_application.cpython-39.pyc
+src/__pycache__/data_local.cpython-39.pyc
+src/__pycache__/model_train.cpython-39.pyc
 
