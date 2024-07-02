@@ -4,6 +4,7 @@ import os
 import joblib
 
 
+
 class RejectionCategory:
     def __init__(self, model_path='data/bart_model/bart_zero_classifier'):
         if model_path and os.path.exists(model_path):
@@ -15,6 +16,7 @@ class RejectionCategory:
             "Medical Justification Denials",
             "Contractual or Financial Benefit Denials",
             "Information Errors or Omissions Denials"]
+        print('Model loading is done')
 
     def save_classifier(self, model_path):
         joblib.dump(self.classifier, model_path)

@@ -218,13 +218,15 @@ class MergedDataPreprocessing:
         return self.df
 
     def column_embedding(self, df1, textual_col=['SERVICE_DESCRIPTION', 'SERVICE_TYPE', 'OASIS_IOS_DESCRIPTION','PROVIDER_DEPARTMENT']):
-        concatenated_string = ' '.join(df1[textual_col].astype(str).values.flatten())
-        arr2 = self.lstm_embedding.embedding_vector(concatenated_string[:], reload_model=True)
-        new_cols_names = [textual_col + str(i + 1) for i in range(arr2.shape[1])]
+        df1['CombinedText'] = df1[textual_col].apply(lambda row: ' '.join(row.values.astype(str)), axis=1)
+        arr2 = self.lstm_embedding.embedding_vector(df1['CombinedText'].tolist(), reload_model=True)
+        new_cols_names = ['CombinedText' + str(i + 1) for i in range(arr2.shape[1])]
         df2 = pd.DataFrame(arr2)
         df2.columns = new_cols_names
         for col in df2.columns:
             df1.loc[:, col] = df2[col].values
+        to_drop = textual_col + ['CombinedText']
+        df1.drop(columns=to_drop, inplace=True)
 
         return df1
 
