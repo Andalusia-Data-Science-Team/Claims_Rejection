@@ -19,11 +19,11 @@ def get_train_test_split():
     return df_train, df_test
 
 
-def get_training_inputs(df_train, df_test): ### deprecated
-    X_train = df_train[train_columns[:-1]];    y_train = df_train[train_columns[-1]]
-    X_test = df_test[train_columns[:-1]];    y_test = df_test[train_columns[-1]]
+def get_training_inputs(df_train, df_test):
+    labels_cols = ['OUTCOME','SUBMIT_CLAIM_MESSAGE']
+    X_train = df_train.drop(columns=labels_cols);  y_train = df_train[labels_cols]
+    X_test = df_test.drop(columns=labels_cols);   y_test = df_test[labels_cols]
 
-    y_test = encode_label(y_test);     y_train = encode_label(y_train)
+    y_test['STATUS'] = encode_label(y_test['STATUS'].tolist());   y_train['STATUS'] = encode_label(y_train['STATUS'].tolist())
 
-    print('Currently, this function is deprecated and needs updates to work well.')
     return X_train, y_train, X_test, y_test
