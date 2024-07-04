@@ -5,6 +5,17 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from src.lstm_encoder import LSTMEmbedding
 
+def read_last_date(file_path='src/data_backup/last_updated_creation_date.txt'):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        if lines:
+            return lines[-1].strip()
+    return None
+
+def append_last_line(new_line,file_path='src/data_backup/last_updated_creation_date.txt'):
+    with open(file_path, 'a') as file:
+        file.write('\n' + new_line)
+
 class DataLoader:
     def __init__(self, source='HJH'):
         self.source = source
@@ -103,7 +114,6 @@ class MergedDataPreprocessing:
         test_data = df[df[id_column].isin(test_ids)]
 
         return train_data, test_data
-
 
     def _label_encode_column(self, column_name, min_count, replace_value='Other'):
         df = self.df.copy()
@@ -236,16 +246,4 @@ class MergedDataPreprocessing:
 
 
 
-'''
-nations_dict = {}
-for nation in set(df_original.PATIENT_NATIONALITY):
-    if nation in ["SAUDI ARABIAN","AMERICAN","BRITISH","IRISH"]:
-        nations_dict[nation] = 2
-    elif nation in ['GERMAN','RUSIAN','SWEDISH','EMIRATI','CANADIAN','FRENCH','SPANISH','ITALIAN',"JORDON","YEMENI","OHIO - USA","BAHRINI"]:
-        nations_dict[nation] = 1
-    else:
-        nations_dict[nation] = 0
-
-nations_dict
-'''
 #preprocessing.store_current_columns(df_index='PATIENT_NATIONALITY',encoding_values = nations_dict)
