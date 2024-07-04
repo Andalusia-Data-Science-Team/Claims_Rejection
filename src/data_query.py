@@ -47,6 +47,23 @@ def load_query(TABLE_NAME='Claim_Visit', source='BI'):
     with engine.connect() as connection:
         return pd.read_sql(query, engine)
 
+def load_query_by_date(TABLE_NAME, LAST_DATE,source='BI'):
+    conn_str = get_connection_from_source(source)
+
+    if f'{TABLE_NAME.lower()}_columns' in table_info_dict.keys():
+        table_columns = table_info_dict[f'{TABLE_NAME.lower()}_columns']
+        columns_string = ", ".join(table_columns)
+    else:
+        columns_string = '*'
+
+    query = f'''SELECT  {columns_string}  FROM DWH_Claims.dbo.{TABLE_NAME}
+        WHERE CREATION_DATE > {LAST_DATE}'''
+
+    connect_string = urllib.parse.quote_plus(conn_str)
+    engine = sqlalchemy.create_engine(f'mssql+pyodbc:///?odbc_connect={connect_string}', fast_executemany=True)
+
+    with engine.connect() as connection:
+        return pd.read_sql(query, engine)
 
 def load_claims_bisample(source='BI'):
     
