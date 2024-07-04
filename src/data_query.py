@@ -65,6 +65,14 @@ def load_query_by_date(TABLE_NAME, LAST_DATE,source='BI'):
     with engine.connect() as connection:
         return pd.read_sql(query, engine)
 
+
+def update_data(LAST_DATE):
+    df_service = load_query_by_date(TABLE_NAME='Claim_Service', LAST_DATE=LAST_DATE)
+    df_visit    = load_query_by_date(TABLE_NAME='Claim_Visit', LAST_DATE=LAST_DATE)
+    df_diagnose = load_query_by_date(TABLE_NAME='Diagnosis', LAST_DATE=LAST_DATE)
+
+    return df_visit, df_service,df_diagnose
+
 def load_claims_bisample(source='BI'):
     
     db_name = db_names[source]
@@ -81,6 +89,7 @@ def load_claims(source='SNB',TABLE_NAME='ClaimTransaction',SAMPLE_SIZE=100):
     query = f'''SELECT TOP({SAMPLE_SIZE}) *  FROM Nphies.{TABLE_NAME}  ORDER BY CreatedDate DESC'''
     df = load_query(query, db_name)
     return df
+
 
 # df_requests, df_response = load_merged(source='SNB')
 #df = load_claims(source='SNB',TABLE_NAME='ClaimTransaction',SAMPLE_SIZE=50)

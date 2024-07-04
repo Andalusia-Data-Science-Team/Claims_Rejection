@@ -1,5 +1,6 @@
 import pandas as pd
 import json
+import os
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
@@ -15,6 +16,15 @@ def read_last_date(file_path='src/data_backup/last_updated_creation_date.txt'):
 def append_last_line(new_line,file_path='src/data_backup/last_updated_creation_date.txt'):
     with open(file_path, 'a') as file:
         file.write('\n' + new_line)
+
+def create_folder(folder_name):
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+
+def store_dfs(df_visit, df_service,df_diagnose,path_date):
+    path_date = path_date + '/'
+    path_visit = path_date + 'visit.parquet'; path_service =  path_date + 'service.parquet';path_diag =  path_date + 'diag.parquet';
+    df_visit.to_parquet(path_visit); df_service.to_parquet(path_service); df_diagnose.to_parquet(path_diag)
 
 class DataLoader:
     def __init__(self, source='HJH'):
