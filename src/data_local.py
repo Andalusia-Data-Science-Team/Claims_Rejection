@@ -1,9 +1,30 @@
 import pandas as pd
 import json
+import os
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from src.lstm_encoder import LSTMEmbedding
+
+def read_last_date(file_path='src/data_backup/last_updated_creation_date.txt'):
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        if lines:
+            return lines[-1].strip()
+    return None
+
+def append_last_line(new_line,file_path='src/data_backup/last_updated_creation_date.txt'):
+    with open(file_path, 'a') as file:
+        file.write('\n' + new_line)
+
+def create_folder(folder_name):
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+
+def store_dfs(df_visit, df_service,df_diagnose,path_date):
+    path_date = path_date + '/'
+    path_visit = path_date + 'visit.parquet'; path_service =  path_date + 'service.parquet';path_diag =  path_date + 'diag.parquet';
+    df_visit.to_parquet(path_visit); df_service.to_parquet(path_service); df_diagnose.to_parquet(path_diag)
 
 class DataLoader:
     def __init__(self, source='HJH'):
@@ -104,7 +125,6 @@ class MergedDataPreprocessing:
 
         return train_data, test_data
 
-
     def _label_encode_column(self, column_name, min_count, replace_value='Other'):
         df = self.df.copy()
         counts = df[column_name].value_counts()
@@ -115,57 +135,109 @@ class MergedDataPreprocessing:
         df[column_name] = label_encoder.fit_transform(df[column_name])
 
         return df[column_name].values
+    #
+    # def _get_parent_family(self, icd10_code):
+    #     icd10_code = str(icd10_code)
+    #     if icd10_code in ['NaN','Nan','None','NULL','nan']:
+    #         return 'OTHER'
+    #     if icd10_code == 'XX':
+    #         return 'OTHER'
+    #     if icd10_code[0].upper() == "A" or icd10_code[0].upper() == "B":
+    #         return 'A00–B99'
+    #     elif icd10_code[0].upper() == "C" or (icd10_code[0].upper() == "D" and int(icd10_code[1].upper()) < 5):
+    #         return 'C00–D48'
+    #     elif icd10_code[0].upper() == "D":
+    #         return 'D50–D89'
+    #     elif icd10_code[0].upper() == "E":
+    #         return 'E00–E90'
+    #     elif icd10_code[0].upper() == "F":
+    #         return 'F00–F99'
+    #     elif icd10_code[0].upper() == "G":
+    #         return 'G00–G99'
+    #     elif icd10_code[0].upper() == "H" and int(icd10_code[1].upper()) < 6:
+    #         return 'H00–H59'
+    #     elif icd10_code[0].upper() == "H":
+    #         return 'H60–H95'
+    #     elif icd10_code[0].upper() == "I":
+    #         return 'I00–I99'
+    #     elif icd10_code[0].upper() == "J":
+    #         return 'J00–J99'
+    #     elif icd10_code[0].upper() == "K":
+    #         return 'K00–K93'
+    #     elif icd10_code[0].upper() == "L":
+    #         return 'L00–L99'
+    #     elif icd10_code[0].upper() == "M":
+    #         return 'M00–M99'
+    #     elif icd10_code[0].upper() == "N":
+    #         return 'N00–N99'
+    #     elif icd10_code[0].upper() == "O":
+    #         return 'O00–O99'
+    #     elif icd10_code[0].upper() == "P":
+    #         return 'P00–P96'
+    #     elif icd10_code[0].upper() == "Q":
+    #         return 'Q00–Q99'
+    #     elif icd10_code[0].upper() == "R":
+    #         return 'R00–R99'
+    #     elif icd10_code[0].upper() == "S" or icd10_code[0].upper() == "T":
+    #         return 'S00–T98'
+    #     elif icd10_code[0].upper() == "V" or icd10_code[0].upper() == "Y":
+    #         return 'V01–Y98'
+    #     elif icd10_code[0].upper() == "Z":
+    #         return 'Z00–Z99'
+    #     else:
+    #         return 'U00–U99'
+
 
     def _get_parent_family(self, icd10_code):
         icd10_code = str(icd10_code)
         if icd10_code in ['NaN','Nan','None','NULL','nan']:
-            return 'OTHER'
+            return 0
         if icd10_code == 'XX':
-            return 'OTHER'
+            return 1
         if icd10_code[0].upper() == "A" or icd10_code[0].upper() == "B":
-            return 'A00–B99'
+            return 2
         elif icd10_code[0].upper() == "C" or (icd10_code[0].upper() == "D" and int(icd10_code[1].upper()) < 5):
-            return 'C00–D48'
+            return 3
         elif icd10_code[0].upper() == "D":
-            return 'D50–D89'
+            return 4
         elif icd10_code[0].upper() == "E":
-            return 'E00–E90'
+            return 5
         elif icd10_code[0].upper() == "F":
-            return 'F00–F99'
+            return 6
         elif icd10_code[0].upper() == "G":
-            return 'G00–G99'
+            return 7
         elif icd10_code[0].upper() == "H" and int(icd10_code[1].upper()) < 6:
-            return 'H00–H59'
+            return 8
         elif icd10_code[0].upper() == "H":
-            return 'H60–H95'
+            return 9
         elif icd10_code[0].upper() == "I":
-            return 'I00–I99'
+            return 10
         elif icd10_code[0].upper() == "J":
-            return 'J00–J99'
+            return 11
         elif icd10_code[0].upper() == "K":
-            return 'K00–K93'
+            return 12
         elif icd10_code[0].upper() == "L":
-            return 'L00–L99'
+            return 13
         elif icd10_code[0].upper() == "M":
-            return 'M00–M99'
+            return 14
         elif icd10_code[0].upper() == "N":
-            return 'N00–N99'
+            return 15
         elif icd10_code[0].upper() == "O":
-            return 'O00–O99'
+            return 16
         elif icd10_code[0].upper() == "P":
-            return 'P00–P96'
+            return 17
         elif icd10_code[0].upper() == "Q":
-            return 'Q00–Q99'
+            return 18
         elif icd10_code[0].upper() == "R":
-            return 'R00–R99'
+            return 19
         elif icd10_code[0].upper() == "S" or icd10_code[0].upper() == "T":
-            return 'S00–T98'
+            return 20
         elif icd10_code[0].upper() == "V" or icd10_code[0].upper() == "Y":
-            return 'V01–Y98'
+            return 21
         elif icd10_code[0].upper() == "Z":
-            return 'Z00–Z99'
+            return 22
         else:
-            return 'U00–U99'
+            return 23
 
     def _categorize_age(self,age):
         if age <= 2:
@@ -215,16 +287,22 @@ class MergedDataPreprocessing:
 
         #self.df['item_Diagnosis'] = self.df.groupby('transaction_DiagnosisIds')['item_Price'].transform('mean')
 
+        icd10_encoding = self._read_list_from_json(column_name='ICD10')
+        self.df['ICD10']  = self.df['ICD10'].apply(lambda x:self._get_parent_family(x))
+        # self.df['ICD10'] = self.df['ICD10'].replace(icd10_encoding)
+
         return self.df
 
     def column_embedding(self, df1, textual_col=['SERVICE_DESCRIPTION', 'SERVICE_TYPE', 'OASIS_IOS_DESCRIPTION','PROVIDER_DEPARTMENT']):
-        concatenated_string = ' '.join(df1[textual_col].astype(str).values.flatten())
-        arr2 = self.lstm_embedding.embedding_vector(concatenated_string[:], reload_model=True)
-        new_cols_names = [textual_col + str(i + 1) for i in range(arr2.shape[1])]
+        df1['CombinedText'] = df1[textual_col].apply(lambda row: ' '.join(row.values.astype(str)), axis=1)
+        arr2 = self.lstm_embedding.embedding_vector(df1['CombinedText'].tolist(), reload_model=True)
+        new_cols_names = ['CombinedText' + str(i + 1) for i in range(arr2.shape[1])]
         df2 = pd.DataFrame(arr2)
         df2.columns = new_cols_names
         for col in df2.columns:
             df1.loc[:, col] = df2[col].values
+        to_drop = textual_col + ['CombinedText']
+        df1.drop(columns=to_drop, inplace=True)
 
         return df1
 
@@ -234,16 +312,4 @@ class MergedDataPreprocessing:
 
 
 
-'''
-nations_dict = {}
-for nation in set(df_original.PATIENT_NATIONALITY):
-    if nation in ["SAUDI ARABIAN","AMERICAN","BRITISH","IRISH"]:
-        nations_dict[nation] = 2
-    elif nation in ['GERMAN','RUSIAN','SWEDISH','EMIRATI','CANADIAN','FRENCH','SPANISH','ITALIAN',"JORDON","YEMENI","OHIO - USA","BAHRINI"]:
-        nations_dict[nation] = 1
-    else:
-        nations_dict[nation] = 0
-
-nations_dict
-'''
 #preprocessing.store_current_columns(df_index='PATIENT_NATIONALITY',encoding_values = nations_dict)

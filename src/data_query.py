@@ -47,6 +47,31 @@ def load_query(TABLE_NAME='Claim_Visit', source='BI'):
     with engine.connect() as connection:
         return pd.read_sql(query, engine)
 
+def load_query_by_date(TABLE_NAME, LAST_DATE,source='BI'):
+    conn_str = get_connection_from_source(source)
+
+    if f'{TABLE_NAME.lower()}_columns' in table_info_dict.keys():
+        table_columns = table_info_dict[f'{TABLE_NAME.lower()}_columns']
+        columns_string = ", ".join(table_columns)
+    else:
+        columns_string = '*'
+
+    query = f'''SELECT  {columns_string}  FROM DWH_Claims.dbo.{TABLE_NAME}
+        WHERE CREATION_DATE > {LAST_DATE}'''
+
+    connect_string = urllib.parse.quote_plus(conn_str)
+    engine = sqlalchemy.create_engine(f'mssql+pyodbc:///?odbc_connect={connect_string}', fast_executemany=True)
+
+    with engine.connect() as connection:
+        return pd.read_sql(query, engine)
+
+
+def update_data(LAST_DATE):
+    df_service = load_query_by_date(TABLE_NAME='Claim_Service', LAST_DATE=LAST_DATE)
+    df_visit    = load_query_by_date(TABLE_NAME='Claim_Visit', LAST_DATE=LAST_DATE)
+    df_diagnose = load_query_by_date(TABLE_NAME='Diagnosis', LAST_DATE=LAST_DATE)
+
+    return df_visit, df_service,df_diagnose
 
 def load_claims_bisample(source='BI'):
     
@@ -64,6 +89,7 @@ def load_claims(source='SNB',TABLE_NAME='ClaimTransaction',SAMPLE_SIZE=100):
     query = f'''SELECT TOP({SAMPLE_SIZE}) *  FROM Nphies.{TABLE_NAME}  ORDER BY CreatedDate DESC'''
     df = load_query(query, db_name)
     return df
+
 
 # df_requests, df_response = load_merged(source='SNB')
 #df = load_claims(source='SNB',TABLE_NAME='ClaimTransaction',SAMPLE_SIZE=50)
