@@ -135,57 +135,109 @@ class MergedDataPreprocessing:
         df[column_name] = label_encoder.fit_transform(df[column_name])
 
         return df[column_name].values
+    #
+    # def _get_parent_family(self, icd10_code):
+    #     icd10_code = str(icd10_code)
+    #     if icd10_code in ['NaN','Nan','None','NULL','nan']:
+    #         return 'OTHER'
+    #     if icd10_code == 'XX':
+    #         return 'OTHER'
+    #     if icd10_code[0].upper() == "A" or icd10_code[0].upper() == "B":
+    #         return 'A00–B99'
+    #     elif icd10_code[0].upper() == "C" or (icd10_code[0].upper() == "D" and int(icd10_code[1].upper()) < 5):
+    #         return 'C00–D48'
+    #     elif icd10_code[0].upper() == "D":
+    #         return 'D50–D89'
+    #     elif icd10_code[0].upper() == "E":
+    #         return 'E00–E90'
+    #     elif icd10_code[0].upper() == "F":
+    #         return 'F00–F99'
+    #     elif icd10_code[0].upper() == "G":
+    #         return 'G00–G99'
+    #     elif icd10_code[0].upper() == "H" and int(icd10_code[1].upper()) < 6:
+    #         return 'H00–H59'
+    #     elif icd10_code[0].upper() == "H":
+    #         return 'H60–H95'
+    #     elif icd10_code[0].upper() == "I":
+    #         return 'I00–I99'
+    #     elif icd10_code[0].upper() == "J":
+    #         return 'J00–J99'
+    #     elif icd10_code[0].upper() == "K":
+    #         return 'K00–K93'
+    #     elif icd10_code[0].upper() == "L":
+    #         return 'L00–L99'
+    #     elif icd10_code[0].upper() == "M":
+    #         return 'M00–M99'
+    #     elif icd10_code[0].upper() == "N":
+    #         return 'N00–N99'
+    #     elif icd10_code[0].upper() == "O":
+    #         return 'O00–O99'
+    #     elif icd10_code[0].upper() == "P":
+    #         return 'P00–P96'
+    #     elif icd10_code[0].upper() == "Q":
+    #         return 'Q00–Q99'
+    #     elif icd10_code[0].upper() == "R":
+    #         return 'R00–R99'
+    #     elif icd10_code[0].upper() == "S" or icd10_code[0].upper() == "T":
+    #         return 'S00–T98'
+    #     elif icd10_code[0].upper() == "V" or icd10_code[0].upper() == "Y":
+    #         return 'V01–Y98'
+    #     elif icd10_code[0].upper() == "Z":
+    #         return 'Z00–Z99'
+    #     else:
+    #         return 'U00–U99'
+
 
     def _get_parent_family(self, icd10_code):
         icd10_code = str(icd10_code)
         if icd10_code in ['NaN','Nan','None','NULL','nan']:
-            return 'OTHER'
+            return 0
         if icd10_code == 'XX':
-            return 'OTHER'
+            return 1
         if icd10_code[0].upper() == "A" or icd10_code[0].upper() == "B":
-            return 'A00–B99'
+            return 2
         elif icd10_code[0].upper() == "C" or (icd10_code[0].upper() == "D" and int(icd10_code[1].upper()) < 5):
-            return 'C00–D48'
+            return 3
         elif icd10_code[0].upper() == "D":
-            return 'D50–D89'
+            return 4
         elif icd10_code[0].upper() == "E":
-            return 'E00–E90'
+            return 5
         elif icd10_code[0].upper() == "F":
-            return 'F00–F99'
+            return 6
         elif icd10_code[0].upper() == "G":
-            return 'G00–G99'
+            return 7
         elif icd10_code[0].upper() == "H" and int(icd10_code[1].upper()) < 6:
-            return 'H00–H59'
+            return 8
         elif icd10_code[0].upper() == "H":
-            return 'H60–H95'
+            return 9
         elif icd10_code[0].upper() == "I":
-            return 'I00–I99'
+            return 10
         elif icd10_code[0].upper() == "J":
-            return 'J00–J99'
+            return 11
         elif icd10_code[0].upper() == "K":
-            return 'K00–K93'
+            return 12
         elif icd10_code[0].upper() == "L":
-            return 'L00–L99'
+            return 13
         elif icd10_code[0].upper() == "M":
-            return 'M00–M99'
+            return 14
         elif icd10_code[0].upper() == "N":
-            return 'N00–N99'
+            return 15
         elif icd10_code[0].upper() == "O":
-            return 'O00–O99'
+            return 16
         elif icd10_code[0].upper() == "P":
-            return 'P00–P96'
+            return 17
         elif icd10_code[0].upper() == "Q":
-            return 'Q00–Q99'
+            return 18
         elif icd10_code[0].upper() == "R":
-            return 'R00–R99'
+            return 19
         elif icd10_code[0].upper() == "S" or icd10_code[0].upper() == "T":
-            return 'S00–T98'
+            return 20
         elif icd10_code[0].upper() == "V" or icd10_code[0].upper() == "Y":
-            return 'V01–Y98'
+            return 21
         elif icd10_code[0].upper() == "Z":
-            return 'Z00–Z99'
+            return 22
         else:
-            return 'U00–U99'
+            return 23
 
     def _categorize_age(self,age):
         if age <= 2:
@@ -234,6 +286,10 @@ class MergedDataPreprocessing:
             self.df.SERVICE_DESCRIPTION = self._label_encode_column(column_name='SERVICE_DESCRIPTION', min_count=15)
 
         #self.df['item_Diagnosis'] = self.df.groupby('transaction_DiagnosisIds')['item_Price'].transform('mean')
+
+        icd10_encoding = self._read_list_from_json(column_name='ICD10')
+        self.df['ICD10']  = self.df['ICD10'].apply(lambda x:self._get_parent_family(x))
+        # self.df['ICD10'] = self.df['ICD10'].replace(icd10_encoding)
 
         return self.df
 
