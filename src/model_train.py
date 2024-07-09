@@ -56,11 +56,12 @@ class ModelTrainer:
         mod_accuracy = accuracy_score(self.y_test, y_pred)
         mod_precision = precision_score(self.y_test, y_pred)
         mod_recall = recall_score(self.y_test, y_pred)
-
+        mod_f1 = (2*mod_precision*mod_recall) / (mod_precision+mod_recall)
         dict_metrics = {
-            "Accuracy": round_two(mod_accuracy),
+            "Accuracy" : round_two(mod_accuracy),
             "Precision": round_two(mod_precision),
-            "Recall": round_two(mod_recall)}
+            "Recall"   : round_two(mod_recall),
+            "F1 Score" : round_two(mod_f1)}
 
         return dict_metrics
 

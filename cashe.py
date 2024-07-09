@@ -20,7 +20,7 @@ def get_train_test_split():
 
 
 def get_training_inputs(df_train, df_test):
-    labels_cols = ['OUTCOME','SUBMIT_CLAIM_MESSAGE']
+    labels_cols = ['OUTCOME','BART_LABEL']
     X_train = df_train.drop(columns=labels_cols);  y_train = df_train[labels_cols]
     X_test = df_test.drop(columns=labels_cols);   y_test = df_test[labels_cols]
 

@@ -37,8 +37,12 @@ class ModelApplication:
 
         return {  "XGBoost": xgb_dict}
 
-    def get_model(self,force_retrain=False):
-        path_model = 'data/xbgoost/model.json'
+    def get_model(self,force_retrain=False,model_type='outcome'):
+        if model_type=='outcome':
+            path_model = 'data/xbgoost/model.json'
+        else:
+            path_model = 'data/xbgoost_rejection/model.json'
+
         if force_retrain:
             self._train_xgboost_classifier()
             self.xgb_model.save_model(path_model)
