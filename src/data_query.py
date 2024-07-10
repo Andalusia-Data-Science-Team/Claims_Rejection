@@ -71,6 +71,7 @@ def update_data(LAST_DATE):
     df_visit    = load_query_by_date(TABLE_NAME='Claim_Visit', LAST_DATE=LAST_DATE)
     df_diagnose = load_query_by_date(TABLE_NAME='Diagnosis', LAST_DATE=LAST_DATE)
 
+
     return df_visit, df_service,df_diagnose
 
 def load_claims_bisample(source='BI'):

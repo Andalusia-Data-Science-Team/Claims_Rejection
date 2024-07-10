@@ -3,7 +3,13 @@ notebooks/model_training_SNB.ipynb
 notebooks/text_encoding_SNB.ipynb
 notebooks/Claims_Rejection_Classification.ipynb
 src/data_backup/passcode.json
-data
+data/deprecated_function
+data/Extras
+data/SplittedData
+data/HJH
+data/.gitignore
+data/link
+data/path_shared
 src/__pycache__/
 data/data_encoder
 __pycache__
