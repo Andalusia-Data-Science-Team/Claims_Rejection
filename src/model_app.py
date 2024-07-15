@@ -61,3 +61,8 @@ class ModelApplication:
 
     def model_predict(self,X_batch):
         return self.xgb_model.predict(X_batch)
+
+    def get_feature_importance(self):
+        xgb_feats = self.xgb_model.feature_importances_
+
+        return xgb_feats
