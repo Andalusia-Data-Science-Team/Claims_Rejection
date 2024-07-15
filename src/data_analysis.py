@@ -97,3 +97,16 @@ class DataUnivariateVisualization:
         print(f"Total Null Values: {total_nulls}")
         print(f"Percentage of Null Values: {null_percentage:.2f}%")
 
+    def find_high_correlations(self, threshold=0.8):
+        corr_matrix = self.df.corr()
+
+        high_corr_pairs = {}
+
+        for i in range(len(corr_matrix.columns)):
+            for j in range(i):
+                if abs(corr_matrix.iloc[i, j]) > threshold:
+                    colname1 = corr_matrix.columns[i]
+                    colname2 = corr_matrix.columns[j]
+                    high_corr_pairs[(colname1, colname2)] = corr_matrix.iloc[i, j]
+
+        return high_corr_pairs

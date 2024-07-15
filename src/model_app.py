@@ -39,9 +39,9 @@ class ModelApplication:
 
     def get_model(self,force_retrain=False,model_type='outcome'):
         if model_type=='outcome':
-            path_model = 'data/xbgoost/model.json'
+            path_model = 'data/xgboost/model.json'
         else:
-            path_model = 'data/xbgoost_rejection/model.json'
+            path_model = 'data/xgboost_rejection/model.json'
 
         if force_retrain:
             self._train_xgboost_classifier()
