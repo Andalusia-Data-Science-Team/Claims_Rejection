@@ -66,3 +66,21 @@ class ModelApplication:
         xgb_feats = self.xgb_model.feature_importances_
 
         return xgb_feats
+
+class ModelApplicationDeployment:
+    def __init__(self, X_batch):
+        self.X_batch = X_batch
+        print('XGBoost Model is loading from disk..')
+        self.claims_classifier = xgb.XGBClassifier()
+        self.rejection_classifier = xgb.XGBClassifier()
+
+        path_model_class = 'data/xgboost/model.json'
+        path_model_rejec = 'data/xgboost_rejection/model.json'
+        self.claims_classifier.load_model(path_model_class)
+        self.rejection_classifier.load_model(path_model_rejec)
+
+    def predict(self):
+        preds_claims =  self.claims_classifier.predict(self.X_batch)
+        preds_rejs =  self.rejection_classifier.predict(self.X_batch)
+
+        return preds_claims, preds_rejs

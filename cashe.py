@@ -30,6 +30,15 @@ def get_training_inputs(df_train, df_test):
     y_train.loc[:, 'OUTCOME'] = encode_label(y_train['OUTCOME'].tolist()); y_test.loc[:, 'OUTCOME'] = encode_label(y_test['OUTCOME'].tolist())
     return X_train, y_train, X_test, y_test
 
+def get_testing_inputs(df_test):
+    labels_cols = ['OUTCOME','SUBMIT_CLAIM_MESSAGE']
+    if 'BART_LABEL' in df_test.columns:
+        labels_cols.append('BART_LABEL')
+
+    X_test = df_test.drop(columns=labels_cols);   y_test = df_test[labels_cols]
+
+    y_test.loc[:, 'OUTCOME'] = encode_label(y_test['OUTCOME'].tolist())
+    return X_test, y_test
 
 def drop_nomodel_columns(df):
     ## list of columns not needed in the modeling.
@@ -42,5 +51,7 @@ def drop_nomodel_columns(df):
         columns_to_drop = [col for col in df2.columns if substring in col]
         df2 = df2.drop(columns=columns_to_drop)
 
-    df2 = df2.drop(columns=['STATUS'])
+    cols_drop = ['HIS_INSURANCE_CODE',  'TOTAL_NET_AMOUNT', 'TOTAL_NET_VAT_AMOUNT', 'TOTAL_CLAIMED_AMOUNT', 'LINE_CLAIMED_AMOUNT', 'CO_INSURANCE',  'NET_AMOUNT', 'UNIT_PRICE','STATUS', 'CO_PAY']
+    for col in cols_drop:
+        df2 = df2.drop(columns=[col])
     return df2
