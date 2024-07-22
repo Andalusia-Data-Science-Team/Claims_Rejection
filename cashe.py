@@ -21,8 +21,8 @@ def get_train_test_split():
 
 def get_training_inputs(df_train, df_test):
     labels_cols = ['OUTCOME','SUBMIT_CLAIM_MESSAGE']
-    if 'BART_LABEL' in df_test.columns:
-        labels_cols.append('BART_LABEL')
+    if 'NPHIES_LABEL' in df_test.columns:
+        labels_cols.append('NPHIES_LABEL')
 
     X_train = df_train.drop(columns=labels_cols);  y_train = df_train[labels_cols]
     X_test = df_test.drop(columns=labels_cols);   y_test = df_test[labels_cols]
@@ -32,8 +32,8 @@ def get_training_inputs(df_train, df_test):
 
 def get_testing_inputs(df_test):
     labels_cols = ['OUTCOME','SUBMIT_CLAIM_MESSAGE']
-    if 'BART_LABEL' in df_test.columns:
-        labels_cols.append('BART_LABEL')
+    if 'NPHIES_LABEL' in df_test.columns:
+        labels_cols.append('NPHIES_LABEL')
 
     X_test = df_test.drop(columns=labels_cols);   y_test = df_test[labels_cols]
 
