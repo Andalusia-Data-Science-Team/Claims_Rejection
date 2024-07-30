@@ -1,5 +1,8 @@
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 import xgboost as xgb
+import pandas as pd
+import numpy as np
+import shap
 import os
 
 def round_two(val):
@@ -84,3 +87,19 @@ class ModelApplicationDeployment:
         preds_rejs =  self.rejection_classifier.predict(self.X_batch)
 
         return preds_claims, preds_rejs
+
+    def interprete(self):
+        explainer = shap.Explainer(self.rejection_classifier)
+        shap_values = explainer(self.X_batch)
+
+        main_contributing_features = []
+
+        for i in range(self.X_batch.shape[0]):
+            shap_row_values = shap_values[i].values
+            main_feature_idx = np.argmax(np.abs(shap_row_values))
+            main_feature_name = self.X_batch.columns[main_feature_idx]
+            main_contributing_features.append(main_feature_name)
+        df = pd.DataFrame()
+        df['main_contributing_feature'] = main_contributing_features
+
+        return df

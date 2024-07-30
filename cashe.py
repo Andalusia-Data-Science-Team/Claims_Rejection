@@ -3,10 +3,16 @@ from src.data_local import DataLoader
 from src.model_train import encode_label
 train_columns = []
 
+def drop_duplicated_claims(df): ## reduces 20% of data
+    df = df.sort_values( by =['CREATION_DATE'])
+    cols = ['VISIT_ID','NET_WITH_VAT', 'SERVICE_DESCRIPTION', 'QTY', 'LINE_CLAIMED_AMOUNT_SAR', 'LINE_ITEM_DISCOUNT', 'NET_VAT_AMOUNT', 'PATIENT_VAT_AMOUNT', 'VAT_PERCENTAGE', 'TREATMENT_TYPE_INDICATOR', 'SERVICE_TYPE', 'DURATION', 'QTY_STOCKED_UOM', 'OASIS_IOS_DESCRIPTION', 'UNIT_PRICE_STOCKED_UOM', 'UNIT_PRICE_NET', 'DISCOUNT_PERCENTAGE', 'EMERGENCY_INDICATOR', 'PROVIDER_DEPARTMENT_CODE', 'PROVIDER_DEPARTMENT', 'DOCTOR_SPECIALTY_CODE', 'DOCTOR_CODE', 'PATIENT_AGE', 'UNIT_OF_AGE', 'PATIENT_NATIONALITY', 'PATIENT_MARITAL_STATUS', 'PATIENT_GENDER', 'CLAIM_TYPE', 'TOTAL_CLAIMED_AMOUNT_SAR', 'TOTAL_DISCOUNT', 'TOTAL_DEDUCTIBLE', 'TOTAL_PATIENT_VATAMOUNT', 'DEPARTMENT_TYPE', 'TREATMENT_TYPE', 'PURCHASER_CODE', 'NEW_BORN', 'ICD10']
+    df.drop_duplicates(cols,keep='last',inplace=True)
+    return df
 
 def get_cashed_input():
-    return pd.read_parquet('data/HJH/prq/df.parquet')
-
+    df = pd.read_parquet('data/HJH/prq/df.parquet')
+    df = drop_duplicated_claims(df)
+    return df
 
 def get_input():
     data_loader = DataLoader()
@@ -15,7 +21,10 @@ def get_input():
 
 def get_train_test_split():
     df_train = pd.read_parquet('data/HJH/prq/train.parquet')
+    df_train = drop_duplicated_claims(df_train)
     df_test  = pd.read_parquet('data/HJH/prq/test.parquet')
+    df_test  = drop_duplicated_claims(df_test)
+
     return df_train, df_test
 
 

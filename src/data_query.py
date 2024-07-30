@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import urllib
 import sqlalchemy
 import pandas as pd
@@ -56,8 +57,12 @@ def load_query_by_date(TABLE_NAME, LAST_DATE,source='BI'):
     else:
         columns_string = '*'
 
+    sixty_days_before = datetime.today() - timedelta(days=60)
+
+    if LAST_DATE > sixty_days_before:
+        LAST_DATE = sixty_days_before - timedelta(days=1)
     query = f'''SELECT  {columns_string}  FROM DWH_Claims.dbo.{TABLE_NAME}
-        WHERE CREATION_DATE > {LAST_DATE}'''
+        WHERE CREATION_DATE > {LAST_DATE} AND CREATION_DATE < {sixty_days_before}'''
 
     connect_string = urllib.parse.quote_plus(conn_str)
     engine = sqlalchemy.create_engine(f'mssql+pyodbc:///?odbc_connect={connect_string}', fast_executemany=True)
