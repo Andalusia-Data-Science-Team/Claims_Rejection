@@ -4,6 +4,7 @@ class DataFrameRejection:
   def __init__(self, df):
     self.df = df
 
+
   def map_rejection_label(self):
     df = self.df
 
@@ -47,3 +48,29 @@ class DataFrameRejection:
         labels.append(label)
       df_label['NPHIES_LABEL'] = labels
       return df_label
+
+
+class RejectionReasonLabeling:
+    def __init__(self, df):
+        self.df = df
+        self.df['NPHIES_CODE'] = None
+
+    def recoginze_label(self):
+      df = self.df
+
+      patterns = {
+          'medical': r"MN-1-[1-2]",
+          'admin': r"AD-[1-3]-[1-8]",
+          'cover': r"CV-[1-3]-(10|[1-9])",
+          'support': r"SE-1-(10|[1-9])",
+          'billing': r"BE-1-(10|[1-9])"  }
+      list_labels = [None] *len(df)
+
+      for i in range(len(df)):
+          text = str(df['NOTES'].iloc[i])
+          for label, pattern in patterns.items():
+                match1 = re.search(pattern, text)
+                if match1:
+                    list_labels[i] = match1.group(0)
+      df.NPHIES_CODE = list_labels
+      return df
