@@ -30,13 +30,10 @@ def load_query(TABLE_NAME='Claim_Visit', source='BI'):
     conn_str = get_connection_from_source(source)
 
     if f'{TABLE_NAME.lower()}_columns' in table_info_dict.keys():
-        # Example list of columns
         table_columns = table_info_dict[f'{TABLE_NAME.lower()}_columns']
-
-        # Convert the list to a comma-separated string
         columns_string = ", ".join(table_columns)
+
     else:
-        # handle the case of unfiltered tables
         columns_string = '*'
 
 
@@ -48,7 +45,7 @@ def load_query(TABLE_NAME='Claim_Visit', source='BI'):
     with engine.connect() as connection:
         return pd.read_sql(query, engine)
 
-def load_query_by_date(TABLE_NAME, LAST_DATE,source='BI'):
+def load_query_by_date(TABLE_NAME, FIRST_DATE, LAST_DATE, source='BI'):
     conn_str = get_connection_from_source(source)
 
     if f'{TABLE_NAME.lower()}_columns' in table_info_dict.keys():
@@ -57,12 +54,11 @@ def load_query_by_date(TABLE_NAME, LAST_DATE,source='BI'):
     else:
         columns_string = '*'
 
-    sixty_days_before = datetime.today() - timedelta(days=60)
-
-    if LAST_DATE > sixty_days_before:
-        LAST_DATE = sixty_days_before - timedelta(days=1)
-    query = f'''SELECT  {columns_string}  FROM DWH_Claims.dbo.{TABLE_NAME}
-        WHERE CREATION_DATE > {LAST_DATE} AND CREATION_DATE < {sixty_days_before}'''
+    if 'Episode-Diagnose' != TABLE_NAME:
+        query = f'''SELECT  {columns_string}  FROM DWH_Claims.dbo.[{TABLE_NAME}]
+          WHERE [CREATION_DATE] > '2024-04-30' AND [CREATION_DATE] < '2024-06-12' '''
+    else:
+        query = f'''SELECT  {columns_string}  FROM DWH_Claims.dbo.[{TABLE_NAME}]'''
 
     connect_string = urllib.parse.quote_plus(conn_str)
     engine = sqlalchemy.create_engine(f'mssql+pyodbc:///?odbc_connect={connect_string}', fast_executemany=True)
@@ -71,13 +67,14 @@ def load_query_by_date(TABLE_NAME, LAST_DATE,source='BI'):
         return pd.read_sql(query, engine)
 
 
-def update_data(LAST_DATE):
-    df_service = load_query_by_date(TABLE_NAME='Claim_Service', LAST_DATE=LAST_DATE)
-    df_visit    = load_query_by_date(TABLE_NAME='Claim_Visit', LAST_DATE=LAST_DATE)
-    df_diagnose = load_query_by_date(TABLE_NAME='Diagnosis', LAST_DATE=LAST_DATE)
+def update_data(FIRST_DATE, LAST_DATE):
+    df_episode  = load_query_by_date(TABLE_NAME='Episode-Diagnose', FIRST_DATE=FIRST_DATE, LAST_DATE=LAST_DATE)
+    df_service = load_query_by_date(TABLE_NAME='Claim_Service',FIRST_DATE=FIRST_DATE, LAST_DATE=LAST_DATE)
+    df_visit    = load_query_by_date(TABLE_NAME='Claim_Visit',FIRST_DATE=FIRST_DATE, LAST_DATE=LAST_DATE)
+    df_diagnose = load_query_by_date(TABLE_NAME='Diagnosis',FIRST_DATE=FIRST_DATE, LAST_DATE=LAST_DATE)
+    return df_visit, df_service, df_diagnose, df_episode
 
 
-    return df_visit, df_service,df_diagnose
 
 def load_claims_bisample(source='BI'):
     

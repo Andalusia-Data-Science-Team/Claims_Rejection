@@ -249,6 +249,12 @@
         "BATCH_PERIOD_START",
         "BATCH_PERIOD_END"
     ],
+    "episode-diagnose_columns":
+    [
+        "Episode_Key",
+        "ICD10",
+        "Diagnosis_Key"
+    ],
     "insurance_ahj_columns": [
     "API_TRANS_ID",
     "API_PROVIDER",

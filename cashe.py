@@ -9,9 +9,15 @@ def drop_duplicated_claims(df): ## reduces 20% of data
     df.drop_duplicates(cols,keep='last',inplace=True)
     return df
 
-def get_cashed_input():
+def read_cashed_original():
     df = pd.read_parquet('data/HJH/prq/df.parquet')
+    return df
+
+def get_cashed_input():
+    #df = pd.read_parquet('data/HJH/prq/df.parquet')
+    df = pd.read_parquet('data/HJH/12-06-2024/df.parquet')
     df = drop_duplicated_claims(df)
+    df = df[df['OUTCOME'].isin(['APPROVED','REJECTED','PARTIAL'])]
     return df
 
 def get_input():
@@ -19,10 +25,11 @@ def get_input():
     df_visit_service = data_loader.merge_visit_service() ## High variance filter is done already
     return df_visit_service
 
-def get_train_test_split():
-    df_train = pd.read_parquet('data/HJH/prq/train.parquet')
+def get_train_test_split(path):
+    train_p = path + '/train.parquet'; test_p = path + '/test.parquet'
+    df_train = pd.read_parquet(train_p)
     df_train = drop_duplicated_claims(df_train)
-    df_test  = pd.read_parquet('data/HJH/prq/test.parquet')
+    df_test  = pd.read_parquet(test_p)
     df_test  = drop_duplicated_claims(df_test)
 
     return df_train, df_test
@@ -63,4 +70,5 @@ def drop_nomodel_columns(df):
     cols_drop = ['HIS_INSURANCE_CODE',  'TOTAL_NET_AMOUNT', 'TOTAL_NET_VAT_AMOUNT', 'TOTAL_CLAIMED_AMOUNT', 'LINE_CLAIMED_AMOUNT', 'CO_INSURANCE',  'NET_AMOUNT', 'UNIT_PRICE','STATUS', 'CO_PAY']
     for col in cols_drop:
         df2 = df2.drop(columns=[col])
+
     return df2

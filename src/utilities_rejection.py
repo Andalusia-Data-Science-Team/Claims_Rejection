@@ -72,5 +72,22 @@ class RejectionReasonLabeling:
                 match1 = re.search(pattern, text)
                 if match1:
                     list_labels[i] = match1.group(0)
-      df.NPHIES_CODE = list_labels
-      return df
+      df['NPHIES_CODE'] = list_labels
+      self.df = df
+
+    def recognize_service(self,df_original):
+        df = self.df
+        df = df[list(df_original.columns)]
+
+        list_labels = [0] * len(df)
+        for i in range(len(df)):
+            row_df = df.iloc[0]
+            visit = row_df['VISIT_ID']; service = row_df['SERVICE_DESCRIPTION']
+
+            sub_df = df_original[df_original['VISIT_ID']==visit]
+            counter = list(sub_df['SERVICE_DESCRIPTION']).count(service)
+
+            if counter > 1:
+                list_labels[i] = 1
+
+        self.df['DUPLICATED_SERVICE'] = list_labels

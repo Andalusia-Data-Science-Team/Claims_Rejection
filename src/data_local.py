@@ -21,10 +21,19 @@ def create_folder(folder_name):
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
 
-def store_dfs(df_visit, df_service,df_diagnose,path_date):
+def store_dfs(df_visit, df_service,df_diagnose,df_episode,path_date):
     path_date = path_date + '/'
-    path_visit = path_date + 'visit.parquet'; path_service =  path_date + 'service.parquet';path_diag =  path_date + 'diag.parquet';
-    df_visit.to_parquet(path_visit); df_service.to_parquet(path_service); df_diagnose.to_parquet(path_diag)
+    path_visit = path_date + 'visit.parquet'; path_service =  path_date + 'service.parquet';path_diag =  path_date + 'diag.parquet'; path_episode = path_date + 'episode.parquet'
+    df_visit.to_parquet(path_visit);df_service.to_parquet(path_service);df_diagnose.to_parquet(path_diag);df_episode.to_parquet(path_episode)
+
+def load_stored_dfs(path_date):
+    path_date = path_date + '/'
+    path_visit = path_date + 'visit.parquet'; path_service =  path_date + 'service.parquet';path_diag =  path_date + 'diag.parquet'; path_episode = path_date + 'episode.parquet'
+    df_visit = pd.read_parquet(path_visit); df_service = pd.read_parquet(path_service); df_diagnose = pd.read_parquet(path_diag)
+    df_episode = pd.read_parquet(path_episode)
+    return df_visit, df_service,df_diagnose, df_episode
+
+
 
 class DataLoader:
     def __init__(self, source='HJH'):
@@ -60,10 +69,19 @@ class DataLoader:
         df2.columns = [prefix + col for col in df2.columns]
         return df2
 
-    def load_data(self):
-        df_service, df_visit = self.load_local()
+    def load_data(self,PATH):
+        df_service, df_visit = self.load_sourced(PATH)
 
         df_visit = self._drop_duplicates(df_visit,list(df_service.columns)) ## drop columns duplications
+        return df_service, df_visit
+
+    def load_sourced(self,PATH):
+        PATH_1 = PATH + '/service.parquet'
+        PATH_2 = PATH + '/visit.parquet'
+
+        df_service = pd.read_parquet(PATH_1)
+        df_visit   = pd.read_parquet(PATH_2)
+
         return df_service, df_visit
 
     def merge_visit_service(self,df_service=None, df_visit=None):
@@ -71,6 +89,28 @@ class DataLoader:
             df_service, df_visit = self.load_data()
         merged_df = pd.merge(df_service, df_visit, left_on='VISIT_ID',how='left') ## merging on VISIT_ID
         return merged_df
+
+
+def self_drop_duplicates(df_visit, service_columns):
+    for col in list(df_visit.columns):
+        if col != 'VISIT_ID' and col in service_columns:
+            df_visit.drop(columns=[col], inplace=True)
+    return df_visit
+
+
+def merge_visit_service(df_service=None, df_visit=None):
+    merged_df = pd.merge(df_service, df_visit, left_on='VISIT_ID', right_on='VISIT_ID',
+                         how='left')  ## merging on VISIT_ID
+    return merged_df
+
+
+def merge_claim(df_visit, df_service, df_episode):
+    df_visit_unique = self_drop_duplicates(df_visit, df_service.columns)
+    df_claim = merge_visit_service(df_service, df_visit_unique)
+
+    df_episode['VISIT_NO'] = df_episode['Episode_Key'].apply(lambda x: x.split('_')[1])
+    df_claim = df_claim.merge(df_episode, how='left', on='VISIT_NO')
+    return df_claim
 
 
 class MergedDataPreprocessing:
@@ -135,57 +175,6 @@ class MergedDataPreprocessing:
         df[column_name] = label_encoder.fit_transform(df[column_name])
 
         return df[column_name].values
-    #
-    # def _get_parent_family(self, icd10_code):
-    #     icd10_code = str(icd10_code)
-    #     if icd10_code in ['NaN','Nan','None','NULL','nan']:
-    #         return 'OTHER'
-    #     if icd10_code == 'XX':
-    #         return 'OTHER'
-    #     if icd10_code[0].upper() == "A" or icd10_code[0].upper() == "B":
-    #         return 'A00–B99'
-    #     elif icd10_code[0].upper() == "C" or (icd10_code[0].upper() == "D" and int(icd10_code[1].upper()) < 5):
-    #         return 'C00–D48'
-    #     elif icd10_code[0].upper() == "D":
-    #         return 'D50–D89'
-    #     elif icd10_code[0].upper() == "E":
-    #         return 'E00–E90'
-    #     elif icd10_code[0].upper() == "F":
-    #         return 'F00–F99'
-    #     elif icd10_code[0].upper() == "G":
-    #         return 'G00–G99'
-    #     elif icd10_code[0].upper() == "H" and int(icd10_code[1].upper()) < 6:
-    #         return 'H00–H59'
-    #     elif icd10_code[0].upper() == "H":
-    #         return 'H60–H95'
-    #     elif icd10_code[0].upper() == "I":
-    #         return 'I00–I99'
-    #     elif icd10_code[0].upper() == "J":
-    #         return 'J00–J99'
-    #     elif icd10_code[0].upper() == "K":
-    #         return 'K00–K93'
-    #     elif icd10_code[0].upper() == "L":
-    #         return 'L00–L99'
-    #     elif icd10_code[0].upper() == "M":
-    #         return 'M00–M99'
-    #     elif icd10_code[0].upper() == "N":
-    #         return 'N00–N99'
-    #     elif icd10_code[0].upper() == "O":
-    #         return 'O00–O99'
-    #     elif icd10_code[0].upper() == "P":
-    #         return 'P00–P96'
-    #     elif icd10_code[0].upper() == "Q":
-    #         return 'Q00–Q99'
-    #     elif icd10_code[0].upper() == "R":
-    #         return 'R00–R99'
-    #     elif icd10_code[0].upper() == "S" or icd10_code[0].upper() == "T":
-    #         return 'S00–T98'
-    #     elif icd10_code[0].upper() == "V" or icd10_code[0].upper() == "Y":
-    #         return 'V01–Y98'
-    #     elif icd10_code[0].upper() == "Z":
-    #         return 'Z00–Z99'
-    #     else:
-    #         return 'U00–U99'
 
 
     def _get_parent_family(self, icd10_code):
@@ -275,21 +264,17 @@ class MergedDataPreprocessing:
             self.df[column] = self.df[column].replace(column_encoding)
             self.df[column] = self.df[column].apply(self._replace_strings_in_column)
 
-        self.df['PatientAgeRange'] = self.df.PATIENT_AGE.apply(self._categorize_age)
+        self.df['PatientAgeRange'] = self.df['PATIENT_AGE'].astype(int).apply(self._categorize_age)
         age_encoding = self._read_list_from_json(column_name='AGE_RANGE')
         self.df['PatientAgeRange'] = self.df.PatientAgeRange.replace(age_encoding)
-        #self.df.transaction_DiagnosisIds = self._label_encode_column(column_name='transaction_DiagnosisIds', min_count=100)
         self.df['PROVIDER_DEPARTMENT'] = self.df.PROVIDER_DEPARTMENT.apply(self._preprocess_service)
         self.df['DURATION'] = self.df['DURATION'].fillna(0)
 
         if service_encoding:
             self.df.SERVICE_DESCRIPTION = self._label_encode_column(column_name='SERVICE_DESCRIPTION', min_count=15)
 
-        #self.df['item_Diagnosis'] = self.df.groupby('transaction_DiagnosisIds')['item_Price'].transform('mean')
 
-        icd10_encoding = self._read_list_from_json(column_name='ICD10')
         self.df['ICD10']  = self.df['ICD10'].apply(lambda x:self._get_parent_family(x))
-        # self.df['ICD10'] = self.df['ICD10'].replace(icd10_encoding)
 
         return self.df
 
@@ -305,11 +290,5 @@ class MergedDataPreprocessing:
         df1.drop(columns=to_drop, inplace=True)
 
         return df1
-
-
     def store_current_columns(self,df_index,encoding_values:dict):
         self._add_list_to_json(list_name=df_index,values=encoding_values)
-
-
-
-#preprocessing.store_current_columns(df_index='PATIENT_NATIONALITY',encoding_values = nations_dict)
