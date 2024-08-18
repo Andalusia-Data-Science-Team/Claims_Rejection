@@ -15,7 +15,7 @@ def read_cashed_original():
 
 def get_cashed_input():
     #df = pd.read_parquet('data/HJH/prq/df.parquet')
-    df = pd.read_parquet('data/HJH/12-08-2024/df.csv')
+    df = pd.read_csv('data/HJH/12-08-2024/df.csv')
     df = drop_duplicated_claims(df)
     df = df[df['OUTCOME'].isin(['APPROVED','REJECTED','PARTIAL'])]
     return df
