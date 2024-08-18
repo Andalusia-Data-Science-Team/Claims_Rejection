@@ -257,7 +257,7 @@ class MergedDataPreprocessing:
             undefined_inp = replacement_value
         return undefined_inp
 
-    def columns_prep(self,service_encoding=True):
+    def columns_prep(self,service_encoding=False):
         LIST_ENCODED_COLS = ["PATIENT_GENDER","EMERGENCY_INDICATOR","PATIENT_NATIONALITY","PATIENT_MARITAL_STATUS","CLAIM_TYPE","NEW_BORN","TREATMENT_TYPE"]
         for column in LIST_ENCODED_COLS:
             column_encoding = self._read_list_from_json(column_name=column)
