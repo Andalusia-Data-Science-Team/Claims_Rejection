@@ -263,18 +263,20 @@ class MergedDataPreprocessing:
             column_encoding = self._read_list_from_json(column_name=column)
             self.df[column] = self.df[column].replace(column_encoding)
             self.df[column] = self.df[column].apply(self._replace_strings_in_column)
+        if 'PatientAgeRange' not in self.df.columns:
+            self.df['PatientAgeRange'] = self.df['PATIENT_AGE'].astype(int).apply(self._categorize_age)
+            age_encoding = self._read_list_from_json(column_name='AGE_RANGE')
+            self.df['PatientAgeRange'] = self.df.PatientAgeRange.replace(age_encoding)
 
-        self.df['PatientAgeRange'] = self.df['PATIENT_AGE'].astype(int).apply(self._categorize_age)
-        age_encoding = self._read_list_from_json(column_name='AGE_RANGE')
-        self.df['PatientAgeRange'] = self.df.PatientAgeRange.replace(age_encoding)
         self.df['PROVIDER_DEPARTMENT'] = self.df.PROVIDER_DEPARTMENT.apply(self._preprocess_service)
         self.df['DURATION'] = self.df['DURATION'].fillna(0)
 
         if service_encoding:
             self.df.SERVICE_DESCRIPTION = self._label_encode_column(column_name='SERVICE_DESCRIPTION', min_count=15)
 
-
-        self.df['ICD10']  = self.df['ICD10'].apply(lambda x:self._get_parent_family(x))
+        # temp comment this line as the data sent was already encoded
+        if type(self.df.ICD10.iloc[0]) == str:
+            self.df['ICD10']  = self.df['ICD10'].apply(lambda x:self._get_parent_family(x))
 
         return self.df
 
