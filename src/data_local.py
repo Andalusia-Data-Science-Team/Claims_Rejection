@@ -273,8 +273,8 @@ class MergedDataPreprocessing:
         if service_encoding:
             self.df.SERVICE_DESCRIPTION = self._label_encode_column(column_name='SERVICE_DESCRIPTION', min_count=15)
 
-
-        self.df['ICD10']  = self.df['ICD10'].apply(lambda x:self._get_parent_family(x))
+        # temp comment this line as the data sent was already encoded
+        #self.df['ICD10']  = self.df['ICD10'].apply(lambda x:self._get_parent_family(x))
 
         return self.df
 
