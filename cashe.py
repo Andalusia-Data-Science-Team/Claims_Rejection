@@ -65,9 +65,10 @@ def drop_nomodel_columns(df):
     df2 = df.copy()
     for substring in list_handler:
         columns_to_drop = [col for col in df2.columns if substring in col]
+        columns_to_drop = [col for col in columns_to_drop if col not in ['CONTRACT_NO','CO_INSURANCE']]
         df2 = df2.drop(columns=columns_to_drop)
 
-    cols_drop = ['HIS_INSURANCE_CODE',  'TOTAL_NET_AMOUNT', 'TOTAL_NET_VAT_AMOUNT', 'TOTAL_CLAIMED_AMOUNT', 'LINE_CLAIMED_AMOUNT', 'CO_INSURANCE',  'NET_AMOUNT', 'UNIT_PRICE','STATUS', 'CO_PAY']
+    cols_drop = ['HIS_INSURANCE_CODE',  'TOTAL_NET_AMOUNT', 'TOTAL_NET_VAT_AMOUNT', 'TOTAL_CLAIMED_AMOUNT', 'LINE_CLAIMED_AMOUNT',  'NET_AMOUNT', 'UNIT_PRICE','STATUS', 'CO_PAY']
     for col in cols_drop:
         df2 = df2.drop(columns=[col])
 
