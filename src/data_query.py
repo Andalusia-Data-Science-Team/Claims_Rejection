@@ -66,6 +66,36 @@ def load_query_by_date(TABLE_NAME, FIRST_DATE, LAST_DATE, source='BI'):
     with engine.connect() as connection:
         return pd.read_sql(query, engine)
 
+def load_merged_query_by_date(FIRST_DATE, LAST_DATE, source='BI'):
+    conn_str = get_connection_from_source(source)
+
+    visit_columns = table_info_dict['claim_visit_columns']
+    service_columns = table_info_dict['claim_service_columns']
+    diagnose_columns = table_info_dict["episode-diagnose_columns"]
+
+    visit_columns_str = ', '.join([f'V.[{col}]' for col in visit_columns])
+    service_columns_str = ', '.join([f'S.[{col}]' for col in service_columns])
+    diagnose_columns_str = ', '.join([f'E.[{col}]' for col in diagnose_columns])
+
+    query = f"""
+        SELECT 
+            {visit_columns_str}, 
+            {service_columns_str}, 
+            {diagnose_columns_str}
+        FROM ClaimVisit VAdd
+        LEFT JOIN Claim_Service S
+            ON V.VISIT_ID=S.VISIT_ID
+        LEFT JOIN [dbo].[Episode-Diagnose] E
+            ON E.EPISODE_KEY=CONCAT('1',V.VISIT_NO)
+        WHERE 
+            (V.[CREATION_DATE] > '{FIRST_DATE}' AND V.[CREATION_DATE] < '{LAST_DATE}'
+            OR V.[AMEND_LAST_DATE] > '{FIRST_DATE}' AND V.[AMEND_LAST_DATE] < '{LAST_DATE}')
+    """
+    connect_string = urllib.parse.quote_plus(conn_str)
+    engine = sqlalchemy.create_engine(f'mssql+pyodbc:///?odbc_connect={connect_string}', fast_executemany=True)
+
+    with engine.connect() as connection:
+        return pd.read_sql(query, engine)
 
 def update_data(FIRST_DATE, LAST_DATE):
     df_episode  = load_query_by_date(TABLE_NAME='Episode-Diagnose', FIRST_DATE=FIRST_DATE, LAST_DATE=LAST_DATE)
