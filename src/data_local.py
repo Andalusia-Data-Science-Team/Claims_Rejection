@@ -165,6 +165,16 @@ class MergedDataPreprocessing:
 
         return train_data, test_data
 
+    def train_test_split_time(self,id_column = 'CREATION_DATE',test_size= 0.2):
+        df = self.df
+        df = self._eliminate_null_claims(df) ## assert 'Accepted' and 'Rejected' cases
+        df = df.sort_values(['CREATION_DATE'])
+        split_time = int(len(df) * 0.80)
+
+        train_data, test_data = df[:split_time], df[split_time:]
+
+        return train_data, test_data
+
     def _label_encode_column(self, column_name, min_count, replace_value='Other'):
         df = self.df.copy()
         counts = df[column_name].value_counts()
@@ -257,39 +267,55 @@ class MergedDataPreprocessing:
             undefined_inp = replacement_value
         return undefined_inp
 
-    def columns_prep(self,service_encoding=False):
-        LIST_ENCODED_COLS = ["PATIENT_GENDER","EMERGENCY_INDICATOR","PATIENT_NATIONALITY","PATIENT_MARITAL_STATUS","CLAIM_TYPE","NEW_BORN","TREATMENT_TYPE"]
+    def columns_prep(self,service_encoding=False,icd_encoding=False):
+        df = self.df
+        LIST_ENCODED_COLS = ["PATIENT_GENDER","ICD10","EMERGENCY_INDICATOR","PATIENT_NATIONALITY","PATIENT_MARITAL_STATUS","CLAIM_TYPE","NEW_BORN","TREATMENT_TYPE"]
         for column in LIST_ENCODED_COLS:
             column_encoding = self._read_list_from_json(column_name=column)
-            self.df[column] = self.df[column].replace(column_encoding)
-            self.df[column] = self.df[column].apply(self._replace_strings_in_column)
-        if 'PatientAgeRange' not in self.df.columns:
-            self.df['PatientAgeRange'] = self.df['PATIENT_AGE'].astype(int).apply(self._categorize_age)
-            age_encoding = self._read_list_from_json(column_name='AGE_RANGE')
-            self.df['PatientAgeRange'] = self.df.PatientAgeRange.replace(age_encoding)
+            df[column] = df[column].replace(column_encoding)
+            if column != 'ICD10': ## Only ICD10 can have string in those columns
+                df[column] = df[column].apply(self._replace_strings_in_column)
 
-        self.df['PROVIDER_DEPARTMENT'] = self.df.PROVIDER_DEPARTMENT.apply(self._preprocess_service)
-        self.df['DURATION'] = self.df['DURATION'].fillna(0)
+        if 'PatientAgeRange' not in df.columns:   ## check not to repeat preprocessing
+            df['PatientAgeRange'] = df['PATIENT_AGE'].astype(int).apply(self._categorize_age)
+            age_encoding = self._read_list_from_json(column_name='AGE_RANGE')
+            df['PatientAgeRange'] = df.PatientAgeRange.replace(age_encoding)
+
+        df['PROVIDER_DEPARTMENT'] = df.PROVIDER_DEPARTMENT.apply(self._preprocess_service)
+        df['DURATION'] = df['DURATION'].fillna(0)
 
         if service_encoding:
-            self.df.SERVICE_DESCRIPTION = self._label_encode_column(column_name='SERVICE_DESCRIPTION', min_count=15)
-
-        # temp comment this line as the data sent was already encoded
-        if type(self.df.ICD10.iloc[0]) == str:
-            self.df['ICD10']  = self.df['ICD10'].apply(lambda x:self._get_parent_family(x))
-
+            df.SERVICE_DESCRIPTION = self._label_encode_column(column_name='SERVICE_DESCRIPTION', min_count=15)
+        if icd_encoding:
+            # temp comment this line as the data sent was already encoded
+            if type(df.ICD10.iloc[0]) == str:
+                df['ICD10']  = df['ICD10'].apply(lambda x:self._get_parent_family(x))
+        self.df = df
         return self.df
 
-    def column_embedding(self, df1, textual_col=['SERVICE_DESCRIPTION', 'SERVICE_TYPE', 'OASIS_IOS_DESCRIPTION','PROVIDER_DEPARTMENT']):
-        df1['CombinedText'] = df1[textual_col].apply(lambda row: ' '.join(row.values.astype(str)), axis=1)
-        arr2 = self.lstm_embedding.embedding_vector(df1['CombinedText'].tolist(), reload_model=True)
-        new_cols_names = ['CombinedText' + str(i + 1) for i in range(arr2.shape[1])]
-        df2 = pd.DataFrame(arr2)
-        df2.columns = new_cols_names
-        for col in df2.columns:
-            df1.loc[:, col] = df2[col].values
-        to_drop = textual_col + ['CombinedText']
-        df1.drop(columns=to_drop, inplace=True)
+    def column_embedding(self, df1, is_service=True):
+        if is_service:
+            textual_col = ['SERVICE_DESCRIPTION', 'SERVICE_TYPE', 'OASIS_IOS_DESCRIPTION', 'PROVIDER_DEPARTMENT']
+            df1['CombinedText'] = df1[textual_col].apply(lambda row: ' '.join(row.values.astype(str)), axis=1)
+            arr2 = self.lstm_embedding.embedding_vector(df1['CombinedText'].tolist(), reload_model=True)
+            new_cols_names = ['CombinedText' + str(i + 1) for i in range(arr2.shape[1])]
+            df2 = pd.DataFrame(arr2)
+            df2.columns = new_cols_names
+            for col in df2.columns:
+                df1.loc[:, col] = df2[col].values
+            to_drop = textual_col + ['CombinedText']
+            df1.drop(columns=to_drop, inplace=True)
+
+        else:
+            textual_col = 'ICD10'
+            arr2 = self.lstm_embedding.embedding_vector(df1[textual_col].tolist(), reload_model=True)
+            new_cols_names = ['ICDText' + str(i + 1) for i in range(arr2.shape[1])]
+            df2 = pd.DataFrame(arr2)
+            df2.columns = new_cols_names
+            for col in df2.columns:
+                df1.loc[:, col] = df2[col].values
+            to_drop = [textual_col]
+            df1.drop(columns=to_drop, inplace=True)
 
         return df1
     def store_current_columns(self,df_index,encoding_values:dict):
