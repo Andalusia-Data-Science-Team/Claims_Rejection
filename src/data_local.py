@@ -168,8 +168,9 @@ class MergedDataPreprocessing:
     def train_test_split_time(self,id_column = 'CREATION_DATE',test_size= 0.2):
         df = self.df
         df = self._eliminate_null_claims(df) ## assert 'Accepted' and 'Rejected' cases
-        df = df.sort_values(['CREATION_DATE'])
-        split_time = int(len(df) * 0.80)
+        df = df.sort_values([id_column])
+        train_size = 1 - test_size
+        split_time = int(len(df) * train_size)
 
         train_data, test_data = df[:split_time], df[split_time:]
 
@@ -187,7 +188,7 @@ class MergedDataPreprocessing:
         return df[column_name].values
 
 
-    def _get_parent_family(self, icd10_code):
+    def _get_parent_family(self, icd10_code):  ##updated with label_items_encoding.json dictionary values (Mid Range)
         icd10_code = str(icd10_code)
         if icd10_code in ['NaN','Nan','None','NULL','nan']:
             return 0
