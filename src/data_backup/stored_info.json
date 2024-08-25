@@ -38,10 +38,7 @@
         "TOOTH_SURFACE",
         "DENTAL_TREATMENT_TYPE",
         "BENEFIT_TYPE_INDICATOR",
-        "UNIT",
-        "UNIT_TYPE",
-        "TIMES",
-        "PER",
+
         "MEDICINE_GENERIC_NAME",
         "MEDICINECONCENTRATION",
         "SERVICE_CODE_SYSTEM",
@@ -66,7 +63,7 @@
         "VISIT_ID",
         "NET_WITH_VAT",
         "SERVICE_DESCRIPTION",
-        "QTY",
+
         "LINE_CLAIMED_AMOUNT",
         "LINE_CLAIMED_AMOUNT_SAR",
         "CO_PAY",
@@ -78,7 +75,15 @@
         "VAT_PERCENTAGE",
         "TREATMENT_TYPE_INDICATOR",
         "SERVICE_TYPE",
+        "SERVICE_CATEGORY",
+
         "DURATION",
+        "UNIT",
+        "UNIT_TYPE",
+        "TIMES",
+        "PER",
+        "QTY",
+
         "QTY_STOCKED_UOM",
         "UNIT_PRICE",
         "OASIS_IOS_DESCRIPTION",
