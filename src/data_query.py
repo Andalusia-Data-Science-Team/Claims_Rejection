@@ -66,7 +66,7 @@ def load_merged_query_by_date(FIRST_DATE, LAST_DATE, source='BI'):
         LEFT JOIN Claim_Service S
             ON V.VISIT_ID=S.VISIT_ID
         LEFT JOIN [dbo].[Episode-Diagnose] E
-            ON E.EPISODE_KEY=CONCAT('1',V.VISIT_NO)
+            ON E.EPISODE_KEY=CONCAT('1_',V.VISIT_NO)
         WHERE 
             (V.[CREATION_DATE] >= '{FIRST_DATE}' AND V.[CREATION_DATE] <= '{LAST_DATE}'
             OR V.[AMEND_LAST_DATE] >= '{FIRST_DATE}' AND V.[AMEND_LAST_DATE] <= '{LAST_DATE}')
