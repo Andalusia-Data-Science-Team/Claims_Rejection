@@ -15,7 +15,7 @@ def read_cashed_original():
 
 def get_cashed_input():
     #df = pd.read_parquet('data/HJH/prq/df.parquet')
-    df = pd.read_parquet('data/HJH/12-06-2024/df.parquet')
+    df = pd.read_parquet('data/HJH/13-06-2024/df.parquet')
     df = drop_duplicated_claims(df)
     df = df[df['OUTCOME'].isin(['APPROVED','REJECTED','PARTIAL'])]
     return df
@@ -68,7 +68,7 @@ def drop_nomodel_columns(df):
         columns_to_drop = [col for col in columns_to_drop if col not in ['CONTRACT_NO','CO_INSURANCE']]
         df2 = df2.drop(columns=columns_to_drop)
 
-    cols_drop = ['HIS_INSURANCE_CODE',  'TOTAL_NET_AMOUNT', 'TOTAL_NET_VAT_AMOUNT', 'TOTAL_CLAIMED_AMOUNT', 'LINE_CLAIMED_AMOUNT',  'NET_AMOUNT', 'UNIT_PRICE','STATUS', 'CO_PAY']
+    cols_drop = ['HIS_INSURANCE_CODE',  'TOTAL_NET_AMOUNT', 'TOTAL_NET_VAT_AMOUNT', 'TOTAL_CLAIMED_AMOUNT', 'LINE_CLAIMED_AMOUNT',  'NET_AMOUNT','SERVICE_CATEGORY', 'UNIT_PRICE','STATUS', 'CO_PAY']
     for col in cols_drop:
         df2 = df2.drop(columns=[col])
 
