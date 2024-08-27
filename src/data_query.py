@@ -75,7 +75,7 @@ def load_merged_query_by_date(FIRST_DATE, LAST_DATE, source='BI'):
     engine = sqlalchemy.create_engine(f'mssql+pyodbc:///?odbc_connect={connect_string}', fast_executemany=True)
 
     with engine.connect() as connection:
-        return pd.read_sql(query, engine)
+        return pd.read_sql(query, connection)
 
 
 def load_query_by_date(TABLE_NAME, FIRST_DATE, LAST_DATE, source='BI'):
