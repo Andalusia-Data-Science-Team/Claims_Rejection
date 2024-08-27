@@ -273,18 +273,20 @@ class MergedDataPreprocessing:
         LIST_ENCODED_COLS = ["PATIENT_GENDER","ICD10","EMERGENCY_INDICATOR","PATIENT_NATIONALITY","PATIENT_MARITAL_STATUS","CLAIM_TYPE","NEW_BORN","TREATMENT_TYPE"]
         for column in LIST_ENCODED_COLS:
             column_encoding = self._read_list_from_json(column_name=column)
-            df[column] = df[column].replace(column_encoding)
+            df[column]= df[column].replace(column_encoding)
+
             if column != 'ICD10': ## Only ICD10 can have string in those columns
                 df[column] = df[column].apply(self._replace_strings_in_column)
 
         if 'PatientAgeRange' not in df.columns:   ## check not to repeat preprocessing
             df['PatientAgeRange'] = df['PATIENT_AGE'].astype(int).apply(self._categorize_age)
             age_encoding = self._read_list_from_json(column_name='AGE_RANGE')
-            df['PatientAgeRange'] = df.PatientAgeRange.replace(age_encoding)
+            df['PatientAgeRange']= df['PatientAgeRange'].replace(age_encoding)
 
         df['PROVIDER_DEPARTMENT'] = df.PROVIDER_DEPARTMENT.apply(self._preprocess_service)
         df['DURATION'] = df['DURATION'].fillna(0)
 
+        ### not recommended
         if service_encoding:
             df.SERVICE_DESCRIPTION = self._label_encode_column(column_name='SERVICE_DESCRIPTION', min_count=15)
         if icd_encoding:
@@ -294,9 +296,9 @@ class MergedDataPreprocessing:
         self.df = df
         return self.df
 
-    def column_embedding(self, df1, is_service=True):
+    def column_embedding(self, df1, is_service=True,service_columns = ['SERVICE_DESCRIPTION', 'SERVICE_TYPE','UNIT','UNIT_TYPE','TIMES','PER', 'OASIS_IOS_DESCRIPTION', 'PROVIDER_DEPARTMENT']):
         if is_service:
-            textual_col = ['SERVICE_DESCRIPTION', 'SERVICE_TYPE', 'OASIS_IOS_DESCRIPTION', 'PROVIDER_DEPARTMENT']
+            textual_col = service_columns
             df1['CombinedText'] = df1[textual_col].apply(lambda row: ' '.join(row.values.astype(str)), axis=1)
             arr2 = self.lstm_embedding.embedding_vector(df1['CombinedText'].tolist(), reload_model=True)
             new_cols_names = ['CombinedText' + str(i + 1) for i in range(arr2.shape[1])]
