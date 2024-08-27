@@ -42,7 +42,7 @@ class LSTMEmbedding:
         filtered_data = X[string_columns].fillna('').astype(str)
         concatenated_data = filtered_data.apply(lambda x: ' '.join(x), axis=1)
         if needs_tokenization:
-            return self._tokenize_data(concatenated_data)
+            return self._tokenize_data(concatenated_data)[:,:16]
         else:
             return concatenated_data
 
