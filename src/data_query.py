@@ -62,14 +62,14 @@ def load_merged_query_by_date(FIRST_DATE, LAST_DATE, source='BI'):
             {visit_columns_str}, 
             {service_columns_str}, 
             {diagnose_columns_str}
-        FROM ClaimVisit VAdd
+        FROM Claim_Visit V
         LEFT JOIN Claim_Service S
             ON V.VISIT_ID=S.VISIT_ID
         LEFT JOIN [dbo].[Episode-Diagnose] E
-            ON E.EPISODE_KEY=CONCAT('1',V.VISIT_NO)
+            ON E.EPISODE_KEY=CONCAT('1_',V.VISIT_NO)
         WHERE 
-            (V.[CREATION_DATE] > '{FIRST_DATE}' AND V.[CREATION_DATE] < '{LAST_DATE}'
-            OR V.[AMEND_LAST_DATE] > '{FIRST_DATE}' AND V.[AMEND_LAST_DATE] < '{LAST_DATE}')
+            (V.[CREATION_DATE] >= '{FIRST_DATE}' AND V.[CREATION_DATE] <= '{LAST_DATE}'
+            OR V.[AMEND_LAST_DATE] >= '{FIRST_DATE}' AND V.[AMEND_LAST_DATE] <= '{LAST_DATE}')
     """
     connect_string = urllib.parse.quote_plus(conn_str)
     engine = sqlalchemy.create_engine(f'mssql+pyodbc:///?odbc_connect={connect_string}', fast_executemany=True)
