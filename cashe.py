@@ -34,6 +34,7 @@ def get_train_test_split(path):
 
     return df_train, df_test
 
+#def check_test_data():
 
 def get_training_inputs(df_train, df_test):
     labels_cols = ['OUTCOME','SUBMIT_CLAIM_MESSAGE']
