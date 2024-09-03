@@ -271,6 +271,8 @@ class MergedDataPreprocessing:
     def columns_prep(self,service_encoding=False,icd_encoding=False):
         df = self.df
         LIST_ENCODED_COLS = ["PATIENT_GENDER","ICD10","EMERGENCY_INDICATOR","PATIENT_NATIONALITY","PATIENT_MARITAL_STATUS","CLAIM_TYPE","NEW_BORN","TREATMENT_TYPE"]
+        # modify the ICD10 column to split values like I24.9 to I24
+        df['ICD10'] = df['ICD10'].apply(lambda x: x.split('.')[0] if type(x) == str else x)
         for column in LIST_ENCODED_COLS:
             column_encoding = self._read_list_from_json(column_name=column)
             df[column]= df[column].replace(column_encoding)
