@@ -53,10 +53,17 @@ class ModelTrainer:
 
     def _get_prediction_metrics(self,model):
         y_pred = model.predict(self.X_test)
-        mod_accuracy = accuracy_score(self.y_test, y_pred)
-        mod_precision = precision_score(self.y_test, y_pred)
-        mod_recall = recall_score(self.y_test, y_pred)
-        mod_f1 = (2*mod_precision*mod_recall) / (mod_precision+mod_recall)
+        try:
+            mod_accuracy = accuracy_score(self.y_test, y_pred)
+            mod_precision = precision_score(self.y_test, y_pred)
+            mod_recall = recall_score(self.y_test, y_pred)
+            mod_f1 = (2*mod_precision*mod_recall) / (mod_precision+mod_recall)
+        except:
+            mod_accuracy = accuracy_score(self.y_test, y_pred)
+            mod_precision = precision_score(self.y_test, y_pred,average='weighted')
+            mod_recall = recall_score(self.y_test, y_pred,average='weighted')
+            mod_f1 = (2*mod_precision*mod_recall) / (mod_precision+mod_recall)
+
         dict_metrics = {
             "Accuracy" : round_two(mod_accuracy),
             "Precision": round_two(mod_precision),
