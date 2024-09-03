@@ -21,11 +21,18 @@ class ModelApplication:
 
     def _get_prediction_metrics(self):
         y_pred = self.xgb_model.predict(self.X_test)
-
-        mod_accuracy = accuracy_score(self.y_test.tolist(), y_pred.tolist())
-        mod_precision = precision_score(self.y_test.tolist(), y_pred.tolist())
-        mod_recall = recall_score(self.y_test.tolist(), y_pred.tolist())
-        f1 = (2*mod_precision*mod_recall) / (mod_precision+ mod_recall)
+        try:
+            mod_accuracy = accuracy_score(self.y_test.tolist(), y_pred.tolist(),)
+            mod_precision = precision_score(self.y_test.tolist(), y_pred.tolist())
+            mod_recall = recall_score(self.y_test.tolist(), y_pred.tolist())
+            f1 = (2*mod_precision*mod_recall) / (mod_precision+ mod_recall)
+            print('Binary Classifier metrics calculation')
+        except:
+            mod_accuracy = accuracy_score(self.y_test.tolist(), y_pred.tolist(),)
+            mod_precision = precision_score(self.y_test.tolist(), y_pred.tolist(),average='weighted')
+            mod_recall = recall_score(self.y_test.tolist(), y_pred.tolist(),average='weighted')
+            f1 = (2*mod_precision*mod_recall) / (mod_precision+ mod_recall)
+            print('Multi-Class Classifier metrics calculation')
 
         dict_metrics = {
             "Accuracy": round_two(mod_accuracy),
@@ -69,6 +76,7 @@ class ModelApplication:
         xgb_feats = self.xgb_model.feature_importances_
 
         return xgb_feats
+
 
 class ModelApplicationDeployment:
     def __init__(self, X_batch):
